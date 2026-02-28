@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "skills": {
+    "TanStack Form": {
+      "source": "exceptionless/exceptionless",
+      "sourceType": "github",
+      "computedHash": "4f2f3fd8ed9a9c9e1800c22edc655c9415bd57939dbe585139db062ef400f876"
+    },
+    "capacitor-app-store": {
+      "source": "cap-go/capacitor-skills",
+      "sourceType": "github",
+      "computedHash": "ae2b207b73dfe2e0a9650280b618d75db3c4ff00cd3026d8c643df834b9449e5"
+    },
+    "capacitor-best-practices": {
+      "source": "cap-go/capacitor-skills",
+      "sourceType": "github",
+      "computedHash": "161003d785ea4a8e23147d316b74e6f0495c1685c7641493ec047afa9fb93bd7"
+    },
+    "capacitor-push-notifications": {
+      "source": "cap-go/capacitor-skills",
+      "sourceType": "github",
+      "computedHash": "c824fb2bfef94750d059782a9b9c5eb088a8d28ee4c209ca5d0a8c9d8360d444"
+    },
+    "tanstack-router-best-practices": {
+      "source": "deckardger/tanstack-agent-skills",
+      "sourceType": "github",
+      "computedHash": "65764bc7b90e47f6023cb7f89b3af93eaaafc517754f10b9382e184d4646a77d"
+    },
+    "tanstack-start-best-practices": {
+      "source": "deckardger/tanstack-agent-skills",
+      "sourceType": "github",
+      "computedHash": "50c1b6d9b35b05927fa0c81962d560634385c9567b7b1d66396b171965b33105"
+    }
+  }
+}

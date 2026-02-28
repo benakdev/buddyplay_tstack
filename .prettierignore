@@ -1,0 +1,29 @@
+# Prettier ignore patterns
+node_modules
+node_modules/
+.agent
+.agents
+.claude
+.cursor
+.github
+
+# Common build, cache, and environment files
+pnpm-lock.yaml
+.tanstack
+.tanstack/
+dist
+dist/
+build
+build/
+coverage
+coverage/
+.cache
+.cache/
+.vercel
+.vercel/
+.env
+.env.local
+.env.*
+.DS_Store
+.vscode
+.idea
