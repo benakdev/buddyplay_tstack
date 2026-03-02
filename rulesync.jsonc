@@ -1,5 +1,5 @@
 {
-  "targets": ["copilot", "codexcli", "antigravity"],
+  "targets": ["copilot", "codexcli", "antigravity", "cursor"],
   "features": ["rules", "ignore", "mcp", "commands", "subagents", "skills"],
   "baseDirs": ["."],
   "delete": true,

@@ -17,6 +17,5 @@ todos.json
 .agent
 .codex
 .github
-
-# native build 
-android
+.cursor
+.cursorignore

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">buddyplay_tstack</string>
+    <string name="title_activity_main">buddyplay_tstack</string>
+    <string name="package_name">com.buddyplay.app</string>
+    <string name="custom_url_scheme">com.buddyplay.app</string>
+</resources>
