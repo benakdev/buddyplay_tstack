@@ -6,14 +6,8 @@ import { ChevronLeft, ChevronRight, Save, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle
-} from '@/components/ui/drawer';
+import { DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { ResponsiveFormContainer } from '@/components/ui/responsive-form-container';
 import type { Id } from '@/convex/_generated/dataModel';
 import type { Sport } from '@/lib/schema/types';
 import { cn } from '@/lib/utils';
@@ -152,50 +146,52 @@ export function MobileWizard({
 
   return (
     <>
-      <Drawer open={true} onOpenChange={isOpen => !isOpen && onSuccess()}>
-        <DrawerContent className="max-h-[90vh]">
-          <DrawerHeader className="pb-0 text-left">
-            <DrawerTitle>{title}</DrawerTitle>
-            <DrawerDescription>{description}</DrawerDescription>
-            {stepIndicator}
-          </DrawerHeader>
+      <ResponsiveFormContainer
+        open={true}
+        onOpenChange={isOpen => !isOpen && onSuccess()}
+        drawerContentProps={{ className: 'max-h-[90vh]' }}
+      >
+        <DrawerHeader className="pb-0 text-left">
+          <DrawerTitle>{title}</DrawerTitle>
+          <DrawerDescription>{description}</DrawerDescription>
+          {stepIndicator}
+        </DrawerHeader>
 
-          <div className="overflow-y-auto">{stepContent()}</div>
+        <div className="overflow-y-auto">{stepContent()}</div>
 
-          <DrawerFooter className="flex-col gap-2">
-            <div className="flex w-full gap-2">
-              <Button variant="outline" onClick={goBack} disabled={isFirstStep} className="flex-1">
-                <ChevronLeft className="mr-1 size-4" />
-                Back
-              </Button>
-              <Button onClick={goNext} disabled={isSubmitting} className="flex-1">
-                {isLastStep ? (
-                  <>
-                    <Save className="mr-1 size-4" />
-                    Save
-                  </>
-                ) : (
-                  <>
-                    Next
-                    <ChevronRight className="ml-1 size-4" />
-                  </>
-                )}
-              </Button>
-            </div>
-            {mode === 'edit' && (
-              <Button
-                variant="ghost"
-                onClick={() => setDeleteAlertOpen(true)}
-                disabled={isSubmitting}
-                className="text-destructive hover:bg-destructive/10 hover:text-destructive w-full"
-              >
-                <Trash2 className="mr-1 size-4" />
-                Delete Passport
-              </Button>
-            )}
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
+        <DrawerFooter className="flex-col gap-2">
+          <div className="flex w-full gap-2">
+            <Button variant="outline" onClick={goBack} disabled={isFirstStep} className="flex-1">
+              <ChevronLeft className="mr-1 size-4" />
+              Back
+            </Button>
+            <Button onClick={goNext} disabled={isSubmitting} className="flex-1">
+              {isLastStep ? (
+                <>
+                  <Save className="mr-1 size-4" />
+                  Save
+                </>
+              ) : (
+                <>
+                  Next
+                  <ChevronRight className="ml-1 size-4" />
+                </>
+              )}
+            </Button>
+          </div>
+          {mode === 'edit' && (
+            <Button
+              variant="ghost"
+              onClick={() => setDeleteAlertOpen(true)}
+              disabled={isSubmitting}
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive w-full"
+            >
+              <Trash2 className="mr-1 size-4" />
+              Delete Passport
+            </Button>
+          )}
+        </DrawerFooter>
+      </ResponsiveFormContainer>
 
       <DeletePassportDialog
         open={deleteAlertOpen}

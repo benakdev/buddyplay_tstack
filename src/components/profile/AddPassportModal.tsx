@@ -3,9 +3,9 @@
 import * as React from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { ResponsiveFormContainer } from '@/components/ui/responsive-form-container';
+import { SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import type { Sport } from '@/lib/schema/types';
 import { cn } from '@/lib/utils';
 
@@ -27,7 +27,6 @@ const sportDescriptions: Record<Sport, string> = {
  * Opens PassportEditModal in create mode after selection.
  */
 export function AddPassportModal({ open, onOpenChange, availableSports }: AddPassportModalProps) {
-  const isMobile = useIsMobile();
   const [selectedSport, setSelectedSport] = React.useState<Sport | null>(null);
   const [editModalOpen, setEditModalOpen] = React.useState(false);
 
@@ -69,43 +68,21 @@ export function AddPassportModal({ open, onOpenChange, availableSports }: AddPas
     </div>
   );
 
-  // Mobile: Drawer
-  if (isMobile) {
-    return (
-      <>
-        <Drawer open={open} onOpenChange={onOpenChange}>
-          <DrawerContent>
-            <DrawerHeader className="text-left">
-              <DrawerTitle>Add Sport Passport</DrawerTitle>
-              <DrawerDescription>Choose a sport to create your player profile.</DrawerDescription>
-            </DrawerHeader>
-            {content}
-          </DrawerContent>
-        </Drawer>
-        {selectedSport && (
-          <PassportEditModal
-            open={editModalOpen}
-            onOpenChange={handleEditModalClose}
-            sport={selectedSport}
-            mode="create"
-          />
-        )}
-      </>
-    );
-  }
-
-  // Desktop: Sheet
   return (
     <>
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent className="sm:max-w-md">
+      <ResponsiveFormContainer open={open} onOpenChange={onOpenChange} sheetContentProps={{ className: 'sm:max-w-md' }}>
+        <DrawerHeader className="text-left md:hidden">
+          <DrawerTitle>Add Sport Passport</DrawerTitle>
+          <DrawerDescription>Choose a sport to create your player profile.</DrawerDescription>
+        </DrawerHeader>
+        <div className="hidden md:block">
           <SheetHeader>
             <SheetTitle>Add Sport Passport</SheetTitle>
             <SheetDescription>Choose a sport to create your player profile.</SheetDescription>
           </SheetHeader>
-          {content}
-        </SheetContent>
-      </Sheet>
+        </div>
+        {content}
+      </ResponsiveFormContainer>
       {selectedSport && (
         <PassportEditModal
           open={editModalOpen}

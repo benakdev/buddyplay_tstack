@@ -7,24 +7,12 @@ import { Loader2, PlusCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger
-} from '@/components/ui/sheet';
+import { ResponsiveFormContainer } from '@/components/ui/responsive-form-container';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
@@ -171,128 +159,155 @@ export function CreateGameSheet({ defaultSport, defaultClubId }: CreateGameSheet
   };
 
   return (
-    <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetTrigger asChild>
+    <ResponsiveFormContainer
+      open={open}
+      onOpenChange={handleOpenChange}
+      trigger={
         <Button>
           <PlusCircle className="mr-1.5 size-4" />
           Create Game
         </Button>
-      </SheetTrigger>
+      }
+      drawerContentProps={{ className: 'max-h-[90vh]' }}
+      sheetContentProps={{ className: 'sm:max-w-md' }}
+    >
+      <DrawerHeader className="text-left md:hidden">
+        <DrawerTitle>Create Game</DrawerTitle>
+        <DrawerDescription>Post a game at your club and notify matching players.</DrawerDescription>
+      </DrawerHeader>
 
-      <SheetContent className="sm:max-w-md">
+      <div className="hidden md:block">
         <SheetHeader>
           <SheetTitle>Create Game</SheetTitle>
           <SheetDescription>Post a game at your club and notify matching players.</SheetDescription>
         </SheetHeader>
+      </div>
 
-        <form onSubmit={handleSubmit} className="flex h-full flex-col">
-          <div className="space-y-4 overflow-y-auto px-6 pb-4">
-            <div className="space-y-1.5">
-              <Label>Sport</Label>
-              <Select value={sport} onValueChange={value => setSport(value as Sport)}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select sport" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SPORT_OPTIONS.map(option => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      <form onSubmit={handleSubmit} className="flex h-full flex-col">
+        <div className="space-y-4 overflow-y-auto px-6 pb-4">
+          <div className="space-y-1.5">
+            <Label>Sport</Label>
+            <Select value={sport} onValueChange={value => setSport(value as Sport)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select sport" />
+              </SelectTrigger>
+              <SelectContent>
+                {SPORT_OPTIONS.map(option => (
+                  <SelectItem key={option} value={option}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-            <div className="space-y-1.5">
-              <Label>Club</Label>
-              <Select value={clubId} onValueChange={setClubId}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select club" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(clubs ?? []).map(club => (
-                    <SelectItem key={club._id} value={club._id}>
-                      {club.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-1.5">
+            <Label>Club</Label>
+            <Select value={clubId} onValueChange={setClubId}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select club" />
+              </SelectTrigger>
+              <SelectContent>
+                {(clubs ?? []).map(club => (
+                  <SelectItem key={club._id} value={club._id}>
+                    {club.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
+          <div className="space-y-1.5">
+            <Label htmlFor="create-game-start">Date & Time</Label>
+            <Input
+              id="create-game-start"
+              type="datetime-local"
+              value={startAt}
+              onChange={event => setStartAt(event.target.value)}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="create-game-start">Date & Time</Label>
+              <Label htmlFor="create-game-level-min">Level Min</Label>
               <Input
-                id="create-game-start"
-                type="datetime-local"
-                value={startAt}
-                onChange={event => setStartAt(event.target.value)}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="create-game-level-min">Level Min</Label>
-                <Input
-                  id="create-game-level-min"
-                  type="number"
-                  step={0.1}
-                  min={SKILL_RANGES[sport].min}
-                  max={SKILL_RANGES[sport].max}
-                  value={levelMin}
-                  onChange={event => setLevelMin(Number(event.target.value))}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="create-game-level-max">Level Max</Label>
-                <Input
-                  id="create-game-level-max"
-                  type="number"
-                  step={0.1}
-                  min={SKILL_RANGES[sport].min}
-                  max={SKILL_RANGES[sport].max}
-                  value={levelMax}
-                  onChange={event => setLevelMax(Number(event.target.value))}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="create-game-players-needed">Players Needed</Label>
-              <Input
-                id="create-game-players-needed"
+                id="create-game-level-min"
                 type="number"
-                min={1}
-                max={8}
-                step={1}
-                value={playersNeeded}
-                onChange={event => setPlayersNeeded(Number(event.target.value))}
+                step={0.1}
+                min={SKILL_RANGES[sport].min}
+                max={SKILL_RANGES[sport].max}
+                value={levelMin}
+                onChange={event => setLevelMin(Number(event.target.value))}
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="create-game-note">Note (Optional)</Label>
-              <Textarea
-                id="create-game-note"
-                rows={4}
-                value={note}
-                onChange={event => setNote(event.target.value)}
-                placeholder="Any extra details for players joining this game."
+              <Label htmlFor="create-game-level-max">Level Max</Label>
+              <Input
+                id="create-game-level-max"
+                type="number"
+                step={0.1}
+                min={SKILL_RANGES[sport].min}
+                max={SKILL_RANGES[sport].max}
+                value={levelMax}
+                onChange={event => setLevelMax(Number(event.target.value))}
               />
             </div>
           </div>
 
-          <SheetFooter className="border-t">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={isSubmitting}>
+          <div className="space-y-1.5">
+            <Label htmlFor="create-game-players-needed">Players Needed</Label>
+            <Input
+              id="create-game-players-needed"
+              type="number"
+              min={1}
+              max={8}
+              step={1}
+              value={playersNeeded}
+              onChange={event => setPlayersNeeded(Number(event.target.value))}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="create-game-note">Note (Optional)</Label>
+            <Textarea
+              id="create-game-note"
+              rows={4}
+              value={note}
+              onChange={event => setNote(event.target.value)}
+              placeholder="Any extra details for players joining this game."
+            />
+          </div>
+        </div>
+
+        <DrawerFooter className="border-t md:hidden">
+          <div className="flex w-full gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setOpen(false)}
+              disabled={isSubmitting}
+              className="flex-1"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="flex-1">
               {isSubmitting ? <Loader2 className="mr-1.5 size-4 animate-spin" /> : null}
               Publish Game
             </Button>
-          </SheetFooter>
-        </form>
-      </SheetContent>
-    </Sheet>
+          </div>
+        </DrawerFooter>
+
+        <SheetFooter className="hidden border-t md:flex">
+          <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? <Loader2 className="mr-1.5 size-4 animate-spin" /> : null}
+            Publish Game
+          </Button>
+        </SheetFooter>
+      </form>
+    </ResponsiveFormContainer>
   );
 }

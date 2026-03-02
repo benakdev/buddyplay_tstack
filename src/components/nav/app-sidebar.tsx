@@ -40,7 +40,7 @@ const navItems = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar collapsible="icon" variant="floating" {...props}>
+    <Sidebar modal={false} collapsible="icon" variant="floating" {...props}>
       <SidebarHeader>
         <BrandHeader />
       </SidebarHeader>
