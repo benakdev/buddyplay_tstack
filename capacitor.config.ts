@@ -15,6 +15,9 @@ const config: CapacitorConfig = {
       '*.google.com',
       '*.googleapis.com',
       'accounts.google.com'
+      // TODO: Add your Vercel app domain after deployment
+      // Example: 'buddyplay.vercel.app' or 'buddyplay.com'
+      // 'your-app.vercel.app'
     ]
   }
 };

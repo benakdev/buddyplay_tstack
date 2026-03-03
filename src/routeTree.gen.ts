@@ -13,6 +13,7 @@ import { Route as SsoCallbackRouteImport } from './routes/sso-callback'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UUsernameRouteImport } from './routes/u.$username'
+import { Route as ApiUsersRouteImport } from './routes/api.users'
 import { Route as ApiHealthRouteImport } from './routes/api.health'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppInboxRouteImport } from './routes/_app.inbox'
@@ -37,6 +38,11 @@ const IndexRoute = IndexRouteImport.update({
 const UUsernameRoute = UUsernameRouteImport.update({
   id: '/u/$username',
   path: '/u/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiUsersRoute = ApiUsersRouteImport.update({
+  id: '/api/users',
+  path: '/api/users',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
@@ -79,6 +85,7 @@ export interface FileRoutesByFullPath {
   '/inbox': typeof AppInboxRoute
   '/profile': typeof AppProfileRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/users': typeof ApiUsersRoute
   '/u/$username': typeof UUsernameRoute
 }
 export interface FileRoutesByTo {
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/inbox': typeof AppInboxRoute
   '/profile': typeof AppProfileRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/users': typeof ApiUsersRoute
   '/u/$username': typeof UUsernameRoute
 }
 export interface FileRoutesById {
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/_app/inbox': typeof AppInboxRoute
   '/_app/profile': typeof AppProfileRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/users': typeof ApiUsersRoute
   '/u/$username': typeof UUsernameRoute
 }
 export interface FileRouteTypes {
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/inbox'
     | '/profile'
     | '/api/health'
+    | '/api/users'
     | '/u/$username'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/inbox'
     | '/profile'
     | '/api/health'
+    | '/api/users'
     | '/u/$username'
   id:
     | '__root__'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/_app/inbox'
     | '/_app/profile'
     | '/api/health'
+    | '/api/users'
     | '/u/$username'
   fileRoutesById: FileRoutesById
 }
@@ -147,6 +159,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   SsoCallbackRoute: typeof SsoCallbackRoute
   ApiHealthRoute: typeof ApiHealthRoute
+  ApiUsersRoute: typeof ApiUsersRoute
   UUsernameRoute: typeof UUsernameRoute
 }
 
@@ -178,6 +191,13 @@ declare module '@tanstack/react-router' {
       path: '/u/$username'
       fullPath: '/u/$username'
       preLoaderRoute: typeof UUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/users': {
+      id: '/api/users'
+      path: '/api/users'
+      fullPath: '/api/users'
+      preLoaderRoute: typeof ApiUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/health': {
@@ -248,6 +268,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   SsoCallbackRoute: SsoCallbackRoute,
   ApiHealthRoute: ApiHealthRoute,
+  ApiUsersRoute: ApiUsersRoute,
   UUsernameRoute: UUsernameRoute,
 }
 export const routeTree = rootRouteImport
