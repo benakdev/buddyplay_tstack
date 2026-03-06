@@ -63,7 +63,7 @@ export function ChatToolbar({ children, className, ...props }: ChatToolbarProps)
   return (
     <div
       className={cn(
-        'bg-background/20 supports-backdrop-filter:bg-background/10 border-border/20 sticky bottom-0 z-10 border-t p-2 backdrop-blur-md',
+        'app-shell-panel sticky bottom-0 z-10 rounded-none border-x-0 border-b-0 bg-background/50 p-2 shadow-none supports-backdrop-filter:bg-background/18 backdrop-blur-xl',
         className
       )}
       {...props}

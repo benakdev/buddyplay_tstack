@@ -44,7 +44,7 @@ export function HostRequestsPanel() {
   };
 
   return (
-    <Card size="sm" className="border-border/70 bg-card/85 overflow-hidden rounded-3xl shadow-sm">
+    <Card size="sm" className="app-shell-panel overflow-hidden rounded-3xl">
       <CardHeader className="p-4 sm:p-6">
         <CardTitle className="flex items-center gap-2 text-base">
           <Clock3 className="size-4" />
@@ -64,7 +64,7 @@ export function HostRequestsPanel() {
             return (
               <div
                 key={item.request._id}
-                className="bg-background/80 border-border/70 space-y-3 rounded-2xl border p-4 shadow-sm"
+                className="app-shell-panel space-y-3 rounded-2xl bg-background/60 p-4"
               >
                 <div className="space-y-1">
                   <p className="text-sm leading-snug font-medium">

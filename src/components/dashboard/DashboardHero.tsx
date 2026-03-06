@@ -37,7 +37,13 @@ export function DashboardHero({ selectedProfileId, onSelectedProfileChange }: Da
     : profiles?.[0];
 
   return (
-    <section className="border-border/70 rounded-3xl border bg-[linear-gradient(135deg,hsl(var(--card))_0%,hsl(var(--muted)/0.55)_100%)] p-4 shadow-sm sm:p-6">
+    <section
+      className="app-shell-panel rounded-3xl p-4 sm:p-6"
+      style={{
+        backgroundImage:
+          'linear-gradient(135deg, color-mix(in srgb, var(--card) 92%, transparent) 0%, color-mix(in srgb, var(--muted) 55%, transparent) 100%)'
+      }}
+    >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
           <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.22em] uppercase">
@@ -56,7 +62,7 @@ export function DashboardHero({ selectedProfileId, onSelectedProfileChange }: Da
           </p>
 
           {profiles && profiles.length > 0 && (
-            <div className="border-border/70 bg-background/70 mt-4 max-w-sm rounded-2xl border p-3">
+            <div className="app-shell-panel mt-4 max-w-sm rounded-2xl bg-background/55 p-3">
               <p className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-[0.2em] uppercase">
                 Dashboard Focus
               </p>
@@ -66,7 +72,7 @@ export function DashboardHero({ selectedProfileId, onSelectedProfileChange }: Da
                   onSelectedProfileChange(value === 'all' ? null : (value as Id<'userSportProfiles'>))
                 }
               >
-                <SelectTrigger className="bg-background h-11 w-full rounded-xl">
+                <SelectTrigger className="app-shell-panel h-11 w-full rounded-xl bg-background/55 shadow-none">
                   <SelectValue placeholder="All passports" />
                 </SelectTrigger>
                 <SelectContent>

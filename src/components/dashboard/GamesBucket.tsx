@@ -52,7 +52,7 @@ export function GamesBucket({
 
   return (
     <div className="space-y-4">
-      <Card className="border-border/70 bg-card/85 overflow-hidden rounded-3xl shadow-sm">
+      <Card className="app-shell-panel overflow-hidden rounded-3xl">
         <CardHeader className="gap-3 p-4 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             {showTitle && (
@@ -83,11 +83,11 @@ export function GamesBucket({
           {profiles === undefined ? (
             <div className="text-muted-foreground text-sm">Loading games…</div>
           ) : profiles.length === 0 ? (
-            <div className="text-muted-foreground rounded-xl border p-4 text-sm">
+            <div className="app-shell-panel text-muted-foreground rounded-xl bg-background/45 p-4 text-sm shadow-none">
               Create a Sport Passport to discover and host games.
             </div>
           ) : !visibleProfiles || visibleProfiles.length === 0 ? (
-            <div className="text-muted-foreground rounded-xl border p-4 text-sm">
+            <div className="app-shell-panel text-muted-foreground rounded-xl bg-background/45 p-4 text-sm shadow-none">
               Add a home club in at least one passport to see club games.
             </div>
           ) : (
@@ -204,7 +204,7 @@ function GamesBucketSection({ limit, profile, search }: { limit: number; profile
   };
 
   return (
-    <div className="border-border/70 bg-muted/10 space-y-3 rounded-2xl border border-dashed p-3 sm:p-4">
+    <div className="app-shell-panel space-y-3 rounded-2xl border-dashed bg-muted/10 p-3 shadow-none sm:p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="font-medium">{profile.sport}</p>
@@ -216,7 +216,7 @@ function GamesBucketSection({ limit, profile, search }: { limit: number; profile
       {games === undefined ? (
         <div className="text-muted-foreground text-sm">Loading games at {selectedClub?.name ?? 'your club'}…</div>
       ) : filteredGames.length === 0 ? (
-        <div className="text-muted-foreground rounded-xl border p-4 text-sm">
+        <div className="app-shell-panel text-muted-foreground rounded-xl bg-background/45 p-4 text-sm shadow-none">
           No open games found at {selectedClub?.name ?? 'your club'}.
         </div>
       ) : (
@@ -227,7 +227,7 @@ function GamesBucketSection({ limit, profile, search }: { limit: number; profile
           return (
             <div
               key={item.activity._id}
-              className="bg-background/80 border-border/70 space-y-3 rounded-2xl border p-4 shadow-sm"
+              className="app-shell-panel space-y-3 rounded-2xl bg-background/60 p-4"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 space-y-1">

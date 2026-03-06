@@ -47,7 +47,7 @@ export function ChatHeader({ children, className, ...props }: ChatHeaderProps) {
 	return (
 		<div
 			className={cn(
-				"bg-background/20 supports-backdrop-filter:bg-background/10 border-border/20 sticky top-[env(safe-area-inset-top,0px)] z-10 flex items-center gap-2 border-b p-2 backdrop-blur-md",
+				"app-shell-panel sticky top-[env(safe-area-inset-top,0px)] z-10 flex items-center gap-2 rounded-none border-x-0 border-t-0 bg-background/50 p-2 shadow-none supports-backdrop-filter:bg-background/18 backdrop-blur-xl",
 				className,
 			)}
 			{...props}

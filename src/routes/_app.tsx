@@ -19,7 +19,7 @@ function ProtectedLayout() {
   const isHandshakeInProgress = urlParams.has('__clerk_handshake');
 
   if (!isLoaded || isHandshakeInProgress) {
-    return <div className="bg-background min-h-screen" />;
+    return <div className="min-h-screen" />;
   }
 
   if (!isSignedIn) {
@@ -33,14 +33,14 @@ function AuthenticatedLayout() {
   const { isLoading } = useStoreUserEffect();
 
   if (isLoading) {
-    return <div className="bg-background min-h-screen" />;
+    return <div className="min-h-screen" />;
   }
 
   return (
     <SidebarProvider className="native-safe-area-shell">
       <AppSidebar />
       <SidebarInset className="h-dvh min-h-0 overflow-hidden">
-        <header className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky top-0 z-20 flex h-14 shrink-0 items-center border-b backdrop-blur-md md:h-16">
+        <header className="app-shell-panel sticky top-0 z-20 flex h-14 shrink-0 items-center rounded-none border-x-0 border-t-0 bg-background/55 supports-backdrop-filter:bg-background/15 shadow-none backdrop-blur-xl md:h-16">
           <div className="flex w-full items-center gap-2 px-2 md:px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
