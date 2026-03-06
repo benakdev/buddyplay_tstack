@@ -21,7 +21,7 @@ export function HostActionsWidget() {
 
   return (
     <section className="space-y-3">
-      <div className="flex items-center gap-2 px-0.5">
+      <div className="flex flex-wrap items-center gap-2 px-0.5">
         <Clock3 className="text-muted-foreground size-4" />
         <span className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">Pending Requests</span>
         {pendingCount > 0 && (

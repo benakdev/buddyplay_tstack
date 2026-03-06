@@ -27,3 +27,7 @@ coverage/
 .DS_Store
 .vscode
 .idea
+
+# Mobile app folders
+ios
+android

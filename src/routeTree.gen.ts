@@ -16,6 +16,7 @@ import { Route as UUsernameRouteImport } from './routes/u.$username'
 import { Route as ApiUsersRouteImport } from './routes/api.users'
 import { Route as ApiHealthRouteImport } from './routes/api.health'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
+import { Route as AppMyGamesRouteImport } from './routes/_app.my-games'
 import { Route as AppInboxRouteImport } from './routes/_app.inbox'
 import { Route as AppFinderRouteImport } from './routes/_app.finder'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
@@ -55,6 +56,11 @@ const AppProfileRoute = AppProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMyGamesRoute = AppMyGamesRouteImport.update({
+  id: '/my-games',
+  path: '/my-games',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppInboxRoute = AppInboxRouteImport.update({
   id: '/inbox',
   path: '/inbox',
@@ -83,6 +89,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AppDashboardRoute
   '/finder': typeof AppFinderRoute
   '/inbox': typeof AppInboxRoute
+  '/my-games': typeof AppMyGamesRoute
   '/profile': typeof AppProfileRoute
   '/api/health': typeof ApiHealthRoute
   '/api/users': typeof ApiUsersRoute
@@ -95,6 +102,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AppDashboardRoute
   '/finder': typeof AppFinderRoute
   '/inbox': typeof AppInboxRoute
+  '/my-games': typeof AppMyGamesRoute
   '/profile': typeof AppProfileRoute
   '/api/health': typeof ApiHealthRoute
   '/api/users': typeof ApiUsersRoute
@@ -109,6 +117,7 @@ export interface FileRoutesById {
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/finder': typeof AppFinderRoute
   '/_app/inbox': typeof AppInboxRoute
+  '/_app/my-games': typeof AppMyGamesRoute
   '/_app/profile': typeof AppProfileRoute
   '/api/health': typeof ApiHealthRoute
   '/api/users': typeof ApiUsersRoute
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/finder'
     | '/inbox'
+    | '/my-games'
     | '/profile'
     | '/api/health'
     | '/api/users'
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/finder'
     | '/inbox'
+    | '/my-games'
     | '/profile'
     | '/api/health'
     | '/api/users'
@@ -148,6 +159,7 @@ export interface FileRouteTypes {
     | '/_app/dashboard'
     | '/_app/finder'
     | '/_app/inbox'
+    | '/_app/my-games'
     | '/_app/profile'
     | '/api/health'
     | '/api/users'
@@ -214,6 +226,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/my-games': {
+      id: '/_app/my-games'
+      path: '/my-games'
+      fullPath: '/my-games'
+      preLoaderRoute: typeof AppMyGamesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/inbox': {
       id: '/_app/inbox'
       path: '/inbox'
@@ -250,6 +269,7 @@ interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppFinderRoute: typeof AppFinderRoute
   AppInboxRoute: typeof AppInboxRoute
+  AppMyGamesRoute: typeof AppMyGamesRoute
   AppProfileRoute: typeof AppProfileRoute
 }
 
@@ -258,6 +278,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppFinderRoute: AppFinderRoute,
   AppInboxRoute: AppInboxRoute,
+  AppMyGamesRoute: AppMyGamesRoute,
   AppProfileRoute: AppProfileRoute,
 }
 

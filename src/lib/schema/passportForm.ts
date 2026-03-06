@@ -4,7 +4,6 @@ import {
   SKILL_RANGES,
   availabilitySchema,
   courtSideSchema,
-  handSchema,
   preferredGenderSchema
 } from '@/convex/lib/validation/sharedSchemas';
 import type { Sport } from '@/lib/schema/types';
@@ -14,7 +13,6 @@ const basePassportFormSchema = z.object({
   homeClubId: z.string(),
   playtomicRating: z.number().min(0).max(7).optional(),
   wprRating: z.number().min(0).max(21).optional(),
-  hand: handSchema,
   courtSide: courtSideSchema.optional(),
   preferredGender: preferredGenderSchema,
   availability: availabilitySchema.optional()

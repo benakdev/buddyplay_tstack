@@ -44,8 +44,8 @@ export function HostRequestsPanel() {
   };
 
   return (
-    <Card size="sm">
-      <CardHeader>
+    <Card size="sm" className="border-border/70 bg-card/85 overflow-hidden rounded-3xl shadow-sm">
+      <CardHeader className="p-4 sm:p-6">
         <CardTitle className="flex items-center gap-2 text-base">
           <Clock3 className="size-4" />
           Host Requests
@@ -53,7 +53,7 @@ export function HostRequestsPanel() {
         <CardDescription>Approve or decline players asking to join your games.</CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 p-4 pt-0 sm:p-6 sm:pt-0">
         {pendingRequests === undefined ? (
           <div className="text-muted-foreground text-sm">Loading requests…</div>
         ) : pendingRequests.length === 0 ? (
@@ -62,21 +62,34 @@ export function HostRequestsPanel() {
           pendingRequests.map(item => {
             const isPending = pendingId === item.request._id;
             return (
-              <div key={item.request._id} className="bg-muted/40 space-y-2 rounded-xl border p-3">
-                <p className="text-sm font-medium">
-                  @{item.requester.username} wants to join <span className="font-semibold">{item.activity.title}</span>
-                </p>
-                <div className="flex gap-2">
+              <div
+                key={item.request._id}
+                className="bg-background/80 border-border/70 space-y-3 rounded-2xl border p-4 shadow-sm"
+              >
+                <div className="space-y-1">
+                  <p className="text-sm leading-snug font-medium">
+                    @{item.requester.username} wants to join{' '}
+                    <span className="font-semibold">{item.activity.title}</span>
+                  </p>
+                  <p className="text-muted-foreground text-xs">Review this player from My Games or act here.</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
                   <Button
                     size="sm"
                     variant="outline"
                     disabled={isPending}
                     onClick={() => handleReject(item.request._id)}
+                    className="h-10"
                   >
                     <X className="mr-1 size-4" />
                     Decline
                   </Button>
-                  <Button size="sm" disabled={isPending} onClick={() => handleApprove(item.request._id)}>
+                  <Button
+                    size="sm"
+                    disabled={isPending}
+                    onClick={() => handleApprove(item.request._id)}
+                    className="h-10"
+                  >
                     <Check className="mr-1 size-4" />
                     Approve
                   </Button>

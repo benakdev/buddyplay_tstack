@@ -54,5 +54,14 @@ export default defineConfig([
       ]
     }
   },
-  globalIgnores(['**/convex/_generated/**', '.tanstack', '*.config.mjs', '*.config.ts'])
+  globalIgnores([
+    '**/convex/_generated/**',
+    '.tanstack',
+    '.output',
+    '*.config.mjs',
+    '*.config.ts',
+    'ios',
+    'android',
+    'dist'
+  ])
 ]);

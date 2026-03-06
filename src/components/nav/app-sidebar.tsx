@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { Bell, Home, Inbox, Search, User } from 'lucide-react';
+import { Home, Inbox, Search, Trophy, User } from 'lucide-react';
 
 import { BrandHeader } from '@/components/nav/brand-header';
 import { NavLinks } from '@/components/nav/nav-links';
@@ -27,9 +27,9 @@ const navItems = [
     icon: Inbox
   },
   {
-    title: 'Alerts',
-    url: '/alerts',
-    icon: Bell
+    title: 'My Games',
+    url: '/my-games',
+    icon: Trophy
   },
   {
     title: 'Profile',

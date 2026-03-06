@@ -11,10 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
-import type { Sport } from '@/lib/schema/types';
 import { getAvailabilitySummary, getSkillLabel } from '@/lib/schema/ui-helpers';
 
 import type { MatchingPlayer, SportProfileDoc } from './types';
@@ -24,6 +22,7 @@ interface PlayersBucketProps {
   hideSearch?: boolean;
   showFinderLink?: boolean;
   showTitle?: boolean;
+  selectedProfileId?: Id<'userSportProfiles'> | null;
 }
 
 function getLevelText(profile: MatchingPlayer['profile']): string {
@@ -47,36 +46,87 @@ export function PlayersBucket({
   limit = 50,
   hideSearch = false,
   showFinderLink = false,
-  showTitle = true
+  showTitle = true,
+  selectedProfileId = null
 }: PlayersBucketProps) {
+  const profiles = useQuery(api.sportProfiles.getCurrentUserProfiles, {});
+  const [search, setSearch] = React.useState('');
+  const visibleProfiles = React.useMemo(() => {
+    if (!profiles) return undefined;
+    const filteredProfiles = selectedProfileId
+      ? profiles.filter(profile => profile._id === selectedProfileId)
+      : profiles;
+
+    return filteredProfiles.filter(profile => profile.homeClubId);
+  }, [profiles, selectedProfileId]);
+
+  return (
+    <Card>
+      <CardHeader className="gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {showTitle && (
+            <div>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Users className="size-5" />
+                Who can I play with?
+              </CardTitle>
+              <CardDescription>
+                Players across your selected passports with similar level and preferences.
+              </CardDescription>
+            </div>
+          )}
+        </div>
+
+        {!hideSearch && (
+          <div className="relative">
+            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+            <Input
+              value={search}
+              onChange={event => setSearch(event.target.value)}
+              placeholder="Search players"
+              className="pl-9"
+            />
+          </div>
+        )}
+      </CardHeader>
+
+      <CardContent className="space-y-3">
+        {profiles === undefined ? (
+          <div className="text-muted-foreground text-sm">Loading players…</div>
+        ) : profiles.length === 0 ? (
+          <div className="bg-muted/40 space-y-3 rounded-xl border p-4 text-sm">
+            <p className="font-medium">Create a Sport Passport to start matching players.</p>
+            <Button asChild size="sm">
+              <Link to="/profile">Set up passport</Link>
+            </Button>
+          </div>
+        ) : !visibleProfiles || visibleProfiles.length === 0 ? (
+          <div className="text-muted-foreground rounded-xl border p-4 text-sm">
+            Add a home club in at least one passport to see player matches.
+          </div>
+        ) : (
+          visibleProfiles.map(profile => (
+            <PlayersBucketSection key={profile._id} limit={limit} profile={profile} search={search} />
+          ))
+        )}
+        {showFinderLink && visibleProfiles && visibleProfiles.length > 0 && (
+          <div className="pt-1 text-center">
+            <Link to="/finder" className="text-primary text-xs font-medium hover:underline">
+              Explore all in Finder →
+            </Link>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function PlayersBucketSection({ limit, profile, search }: { limit: number; profile: SportProfileDoc; search: string }) {
   const navigate = useNavigate();
   const createDM = useMutation(api.conversations.createDM);
-  const profiles = useQuery(api.sportProfiles.getCurrentUserProfiles, {});
   const clubs = useQuery(api.clubs.listClubs, {});
-  const [selectedSport, setSelectedSport] = React.useState<Sport | null>(null);
-  const [search, setSearch] = React.useState('');
+  const matches = useQuery(api.sportProfiles.findMatchingPlayers, { profileId: profile._id, limit });
   const [messageTargetId, setMessageTargetId] = React.useState<Id<'users'> | null>(null);
-
-  React.useEffect(() => {
-    if (!profiles || profiles.length === 0) {
-      return;
-    }
-
-    const hasSelectedSport = selectedSport && profiles.some(profile => profile.sport === selectedSport);
-    if (!hasSelectedSport) {
-      setSelectedSport(profiles[0].sport);
-    }
-  }, [profiles, selectedSport]);
-
-  const selectedProfile: SportProfileDoc | null = React.useMemo(() => {
-    if (!profiles || !selectedSport) return null;
-    return profiles.find(profile => profile.sport === selectedSport) ?? null;
-  }, [profiles, selectedSport]);
-
-  const matches = useQuery(
-    api.sportProfiles.findMatchingPlayers,
-    selectedProfile ? { profileId: selectedProfile._id, limit } : 'skip'
-  );
 
   const clubById = React.useMemo(() => {
     const map = new Map<string, string>();
@@ -86,13 +136,12 @@ export function PlayersBucket({
     return map;
   }, [clubs]);
 
-  const selectedClubId = selectedProfile?.homeClubId;
-  const selectedClubName = selectedClubId ? clubById.get(selectedClubId) : null;
+  const selectedClubName = profile.homeClubId ? clubById.get(profile.homeClubId) : null;
 
   const clubMatches = React.useMemo(() => {
-    if (!matches || !selectedClubId) return [];
-    return matches.filter(match => match.profile.homeClubId === selectedClubId);
-  }, [matches, selectedClubId]);
+    if (!matches || !profile.homeClubId) return [];
+    return matches.filter(match => match.profile.homeClubId === profile.homeClubId);
+  }, [matches, profile.homeClubId]);
 
   const filteredMatches = React.useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -107,10 +156,6 @@ export function PlayersBucket({
       );
     });
   }, [clubMatches, search, selectedClubName]);
-
-  const sportOptions = React.useMemo(() => {
-    return Array.from(new Set((profiles ?? []).map(profile => profile.sport)));
-  }, [profiles]);
 
   const handleMessage = async (userId: Id<'users'>) => {
     setMessageTargetId(userId);
@@ -129,115 +174,60 @@ export function PlayersBucket({
   };
 
   return (
-    <Card>
-      <CardHeader className="gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          {showTitle && (
-            <div>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Users className="size-5" />
-                Who can I play with?
-              </CardTitle>
-              <CardDescription>Players at your club with similar level and preferences.</CardDescription>
-            </div>
-          )}
-
-          {sportOptions.length > 0 && (
-            <Select value={selectedSport ?? undefined} onValueChange={value => setSelectedSport(value as Sport)}>
-              <SelectTrigger className="w-36">
-                <SelectValue placeholder="Sport" />
-              </SelectTrigger>
-              <SelectContent>
-                {sportOptions.map(sport => (
-                  <SelectItem key={sport} value={sport}>
-                    {sport}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+    <div className="space-y-3 rounded-2xl border border-dashed p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <p className="font-medium">{profile.sport}</p>
+          <p className="text-muted-foreground text-xs">{selectedClubName ?? 'Your club'}</p>
         </div>
+        <Badge variant="outline">Passport</Badge>
+      </div>
 
-        {!hideSearch && (
-          <div className="relative">
-            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-            <Input
-              value={search}
-              onChange={event => setSearch(event.target.value)}
-              placeholder="Search players"
-              className="pl-9"
-            />
-          </div>
-        )}
-      </CardHeader>
-
-      <CardContent className="space-y-3">
-        {profiles === undefined || clubs === undefined ? (
-          <div className="text-muted-foreground text-sm">Loading players…</div>
-        ) : profiles.length === 0 ? (
-          <div className="bg-muted/40 space-y-3 rounded-xl border p-4 text-sm">
-            <p className="font-medium">Create a Sport Passport to start matching players.</p>
-            <Button asChild size="sm">
-              <Link to="/profile">Set up passport</Link>
-            </Button>
-          </div>
-        ) : !selectedClubId ? (
-          <div className="text-muted-foreground rounded-xl border p-4 text-sm">
-            Add a home club in your passport to see player matches.
-          </div>
-        ) : matches === undefined ? (
-          <div className="text-muted-foreground text-sm">Finding players at {selectedClubName ?? 'your club'}…</div>
-        ) : filteredMatches.length === 0 ? (
-          <div className="text-muted-foreground rounded-xl border p-4 text-sm">
-            No player matches found at {selectedClubName ?? 'your club'}.
-          </div>
-        ) : (
-          filteredMatches.slice(0, limit).map(match => {
-            const isMessaging = messageTargetId === match.user._id;
-            return (
-              <div key={match.profile._id} className="bg-muted/35 space-y-3 rounded-xl border p-4">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <p className="font-medium">@{match.user.username}</p>
-                    <p className="text-muted-foreground text-sm">{getLevelText(match.profile)}</p>
-                  </div>
-                  <Badge variant="secondary">Match {Math.round(match.score)}</Badge>
+      {matches === undefined ? (
+        <div className="text-muted-foreground text-sm">Finding players at {selectedClubName ?? 'your club'}…</div>
+      ) : filteredMatches.length === 0 ? (
+        <div className="text-muted-foreground rounded-xl border p-4 text-sm">
+          No player matches found at {selectedClubName ?? 'your club'}.
+        </div>
+      ) : (
+        filteredMatches.slice(0, limit).map(match => {
+          const isMessaging = messageTargetId === match.user._id;
+          return (
+            <div key={match.profile._id} className="bg-muted/35 space-y-3 rounded-xl border p-4">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <p className="font-medium">@{match.user.username}</p>
+                  <p className="text-muted-foreground text-sm">{getLevelText(match.profile)}</p>
                 </div>
-
-                <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
-                  <Badge variant="outline">{selectedClubName ?? 'Club'}</Badge>
-                  {match.profile.availability ? (
-                    <span>{getAvailabilitySummary(match.profile.availability)}</span>
-                  ) : (
-                    <span>No availability set</span>
-                  )}
-                </div>
-
-                <div className="flex gap-2">
-                  <Button asChild size="sm" variant="outline">
-                    <a href={`/u/${match.user.username}`}>View Profile</a>
-                  </Button>
-                  <Button size="sm" onClick={() => handleMessage(match.user._id)} disabled={isMessaging}>
-                    {isMessaging ? (
-                      <Loader2 className="mr-1.5 size-4 animate-spin" />
-                    ) : (
-                      <MessageCircle className="mr-1.5 size-4" />
-                    )}
-                    Message
-                  </Button>
-                </div>
+                <Badge variant="secondary">Match {Math.round(match.score)}</Badge>
               </div>
-            );
-          })
-        )}
-        {showFinderLink && filteredMatches.length > 0 && (
-          <div className="pt-1 text-center">
-            <Link to="/finder" className="text-primary text-xs font-medium hover:underline">
-              Explore all in Finder →
-            </Link>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+
+              <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
+                <Badge variant="outline">{selectedClubName ?? 'Club'}</Badge>
+                {match.profile.availability ? (
+                  <span>{getAvailabilitySummary(match.profile.availability)}</span>
+                ) : (
+                  <span>No availability set</span>
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <Button asChild size="sm" variant="outline">
+                  <a href={`/u/${match.user.username}`}>View Profile</a>
+                </Button>
+                <Button size="sm" onClick={() => handleMessage(match.user._id)} disabled={isMessaging}>
+                  {isMessaging ? (
+                    <Loader2 className="mr-1.5 size-4 animate-spin" />
+                  ) : (
+                    <MessageCircle className="mr-1.5 size-4" />
+                  )}
+                  Message
+                </Button>
+              </div>
+            </div>
+          );
+        })
+      )}
+    </div>
   );
 }

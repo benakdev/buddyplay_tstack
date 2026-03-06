@@ -33,6 +33,7 @@ export function FinderGamesTab({ search, sport }: FinderGamesTabProps) {
   const profiles = useQuery(api.sportProfiles.getCurrentUserProfiles, {});
   const currentUser = useQuery(api.users.getCurrentUser, {});
   const myRequests = useQuery(api.requests.getMyRequests, {});
+  const myUpcomingGames = useQuery(api.activities.listMyUpcomingActivities, { limit: 50 });
   const clubs = useQuery(api.clubs.listClubs, sport ? { sport } : {});
 
   const [filtersOpen, setFiltersOpen] = React.useState(false);
@@ -66,12 +67,18 @@ export function FinderGamesTab({ search, sport }: FinderGamesTabProps) {
   );
 
   const requestByActivityId = React.useMemo(() => {
-    const map = new Map<string, 'PENDING' | 'APPROVED' | 'REJECTED'>();
+    const map = new Map<string, 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED'>();
     for (const item of myRequests ?? []) {
       map.set(item.activity._id, item.request.status);
     }
     return map;
   }, [myRequests]);
+
+  const joinedActivityIds = React.useMemo(() => {
+    return new Set(
+      (myUpcomingGames ?? []).filter(item => item.participantStatus === 'JOINED').map(item => item.activity._id)
+    );
+  }, [myUpcomingGames]);
 
   const normalizedSearch = search.toLowerCase();
 
@@ -88,9 +95,10 @@ export function FinderGamesTab({ search, sport }: FinderGamesTabProps) {
   const getActionState = (item: ActivityWithCreator): { label: string; disabled: boolean } => {
     if (!currentUser) return { label: 'Sign in', disabled: true };
     if (item.activity.creatorId === currentUser._id) return { label: 'Your Game', disabled: true };
+    if (joinedActivityIds.has(item.activity._id)) return { label: 'Joined', disabled: true };
     const status = requestByActivityId.get(item.activity._id);
     if (status === 'PENDING') return { label: 'Requested', disabled: true };
-    if (status === 'APPROVED') return { label: 'Joined', disabled: true };
+    if (status === 'REJECTED') return { label: 'Declined', disabled: true };
     if (item.activity.status !== 'OPEN') return { label: item.activity.status, disabled: true };
     return { label: 'Request to Join', disabled: false };
   };

@@ -30,5 +30,5 @@ export function getErrorMessage(error: unknown): string | undefined {
 // Generate a unique key for the form based on initial data
 // This forces React to remount the form when the data changes
 export function getFormKey(initialData: Partial<PassportFormData> | undefined, sport: Sport): string {
-  return `${sport}-${initialData?.skillLevel ?? 'new'}-${initialData?.playtomicRating ?? 'p'}-${initialData?.wprRating ?? 'w'}-${initialData?.homeClubId ?? 'club'}-${initialData?.hand ?? 'new'}-${initialData?.courtSide ?? 'none'}-${initialData?.preferredGender ?? 'any'}`;
+  return `${sport}-${initialData?.skillLevel ?? 'new'}-${initialData?.playtomicRating ?? 'p'}-${initialData?.wprRating ?? 'w'}-${initialData?.homeClubId ?? 'club'}-${initialData?.courtSide ?? 'none'}-${initialData?.preferredGender ?? 'any'}`;
 }

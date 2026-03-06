@@ -9,7 +9,7 @@ import { Save, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-import { SelectField, SwitchField, TextField, TextareaField } from '@/components/form';
+import { SelectField, SwitchField, TextField, TextareaField, ToggleGroupField } from '@/components/form';
 import { Button } from '@/components/ui/button';
 import { DrawerClose, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Label } from '@/components/ui/label';
@@ -17,7 +17,7 @@ import { ResponsiveFormContainer } from '@/components/ui/responsive-form-contain
 import { SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { api } from '@/convex/_generated/api';
 import type { Doc } from '@/convex/_generated/dataModel';
-import { genderSchema, usernameSchema } from '@/convex/lib/validation/sharedSchemas';
+import { genderSchema, handSchema, usernameSchema } from '@/convex/lib/validation/sharedSchemas';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
@@ -33,7 +33,13 @@ interface ProfileSettingsModalProps {
 // Client-side schema for form validation (derived from Convex schemas)
 const profileFormSchema = z.object({
   username: usernameSchema,
-  gender: genderSchema.optional().or(z.literal('')),
+  gender: genderSchema,
+  age: z
+    .string()
+    .refine(value => value === '' || (/^\d+$/.test(value) && Number(value) >= 13 && Number(value) <= 120), {
+      message: 'Age must be between 13 and 120.'
+    }),
+  dominantHand: handSchema.optional().or(z.literal('')),
   bio: z.string().optional(),
   hideLastName: z.boolean(),
   hideName: z.boolean()
@@ -57,7 +63,9 @@ function ProfileSettingsFormContent({ user, onClose, isMobile }: ProfileSettings
   const form = useForm({
     defaultValues: {
       username: user?.username || '',
-      gender: user?.gender || '',
+      gender: user?.gender === 'Male' || user?.gender === 'Female' ? user.gender : 'Male',
+      age: user?.age ? String(user.age) : '',
+      dominantHand: user?.dominantHand || '',
       bio: user?.bio || '',
       hideLastName: user?.privacySettings?.hideLastName || false,
       hideName: user?.privacySettings?.hideName || false
@@ -68,9 +76,12 @@ function ProfileSettingsFormContent({ user, onClose, isMobile }: ProfileSettings
     onSubmit: async ({ value }) => {
       const username = value.username.trim();
       const bio = value.bio?.trim();
+      const parsedAge = value.age ? Number(value.age) : undefined;
       const payload = {
         username: username || undefined,
-        gender: value.gender ? (value.gender as 'Male' | 'Female' | 'Other' | 'Prefer not to say') : undefined,
+        gender: value.gender,
+        age: parsedAge,
+        dominantHand: value.dominantHand ? (value.dominantHand as 'Left' | 'Right') : undefined,
         bio: bio || undefined,
         privacySettings: {
           hideLastName: value.hideLastName,
@@ -149,9 +160,50 @@ function ProfileSettingsFormContent({ user, onClose, isMobile }: ProfileSettings
                 placeholder="Select gender"
                 options={[
                   { value: 'Male', label: 'Male' },
-                  { value: 'Female', label: 'Female' },
-                  { value: 'Other', label: 'Other' },
-                  { value: 'Prefer not to say', label: 'Prefer not to say' }
+                  { value: 'Female', label: 'Female' }
+                ]}
+                error={typeof error === 'string' ? error : error?.message}
+                invalid={field.state.meta.errors.length > 0}
+              />
+            );
+          }}
+        </form.Field>
+
+        <form.Field name="age">
+          {field => {
+            const error = field.state.meta.errors[0];
+            return (
+              <TextField
+                label="Age"
+                id="age"
+                type="number"
+                min={13}
+                max={120}
+                inputMode="numeric"
+                value={field.state.value ?? ''}
+                onChange={value => field.handleChange(value)}
+                onBlur={field.handleBlur}
+                placeholder="Optional"
+                error={typeof error === 'string' ? error : error?.message}
+                invalid={field.state.meta.errors.length > 0}
+              />
+            );
+          }}
+        </form.Field>
+
+        <form.Field name="dominantHand">
+          {field => {
+            const error = field.state.meta.errors[0];
+            return (
+              <ToggleGroupField
+                label="Dominant Hand"
+                id="dominantHand"
+                value={field.state.value ?? ''}
+                onChange={value => field.handleChange(value as typeof field.state.value)}
+                onBlur={field.handleBlur}
+                options={[
+                  { value: 'Left', label: 'Left Handed' },
+                  { value: 'Right', label: 'Right Handed' }
                 ]}
                 error={typeof error === 'string' ? error : error?.message}
                 invalid={field.state.meta.errors.length > 0}

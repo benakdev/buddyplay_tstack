@@ -160,17 +160,14 @@ export const getMyNotificationsEnriched = zQuery({
           .query('notifications')
           .withIndex('by_user_read', q => q.eq('userId', user._id).eq('read', false))
           .order('desc')
-          .collect()
+        .collect()
       : await ctx.db
           .query('notifications')
           .withIndex('by_user', q => q.eq('userId', user._id))
           .order('desc')
-          .collect();
+        .collect();
 
-    const notifications = filterNotificationsByType(rawNotifications, args.includeTypes, args.excludeTypes).slice(
-      0,
-      limit
-    );
+    const notifications = filterNotificationsByType(rawNotifications, args.includeTypes, args.excludeTypes).slice(0, limit);
 
     const actorByNotificationId = new Map<string, Id<'users'>>();
     const requestFallbackIds = new Set<Id<'requests'>>();

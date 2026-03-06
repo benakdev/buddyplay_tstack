@@ -6,6 +6,8 @@ import { useMutation, useQuery } from 'convex/react';
 import { Loader2, PlusCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { Textarea } from '@/components/ui/textarea';
+import { api } from '@/convex/_generated/api';
 import { Button } from '@/components/ui/button';
 import { DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
@@ -13,8 +15,6 @@ import { Label } from '@/components/ui/label';
 import { ResponsiveFormContainer } from '@/components/ui/responsive-form-container';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Textarea } from '@/components/ui/textarea';
-import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
 import { SKILL_RANGES } from '@/convex/lib/validation/sharedSchemas';
 import type { Sport } from '@/lib/schema/types';

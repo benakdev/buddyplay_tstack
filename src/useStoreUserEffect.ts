@@ -5,8 +5,8 @@ import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/tanstack-react-start';
 import { useConvexAuth, useMutation } from 'convex/react';
 
-import { api } from './convex/_generated/api';
-import type { Id } from './convex/_generated/dataModel';
+import { api } from '../convex/_generated/api';
+import type { Id } from '../convex/_generated/dataModel';
 
 export function useStoreUserEffect() {
   const { isLoading, isAuthenticated } = useConvexAuth();

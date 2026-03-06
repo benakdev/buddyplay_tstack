@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import { useMutation, useQuery } from 'convex/react';
 import { format } from 'date-fns';
-import { CalendarClock } from 'lucide-react';
+import { CalendarClock, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
+
+import { GameDetailsSheet } from './GameDetailsSheet';
 
 function formatGameTime(timestamp: number): string {
   return format(new Date(timestamp), 'EEE · MMM d, p');
@@ -54,7 +56,7 @@ export function MyUpcomingGamesCarousel() {
     return (
       <div className="flex gap-3 overflow-hidden">
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="bg-muted/40 h-29.5 w-65 shrink-0 animate-pulse rounded-xl border" />
+          <div key={i} className="bg-muted/40 h-40 w-[min(320px,88vw)] shrink-0 animate-pulse rounded-2xl border" />
         ))}
       </div>
     );
@@ -76,19 +78,19 @@ export function MyUpcomingGamesCarousel() {
           const spotsLeft = Math.max(0, item.activity.requirements.slotsTotal - item.activity.joinedCount);
           const isPending = item.participantStatus === 'PENDING';
           const isBusy = actionId === item.activity._id;
+          const locationLabel = item.activity.location.name ?? item.activity.location.city;
 
           return (
-            <CarouselItem key={item.activity._id} className="basis-[min(280px,85vw)] pl-3">
+            <CarouselItem key={item.activity._id} className="basis-[min(320px,88vw)] pl-3">
               <div
                 className={[
-                  'flex h-full flex-col justify-between gap-3 rounded-xl border p-4 transition-colors',
+                  'flex h-full flex-col justify-between gap-4 rounded-2xl border p-4 shadow-sm transition-colors sm:p-5',
                   isPending
                     ? 'border-amber-200/70 bg-amber-50/60 dark:border-amber-800/40 dark:bg-amber-950/20'
                     : 'bg-card hover:border-border/80'
                 ].join(' ')}
               >
-                {/* Status pill + Title */}
-                <div className="min-w-0 space-y-2">
+                <div className="min-w-0 space-y-3">
                   <div className="flex items-center gap-2">
                     <span
                       className={[
@@ -101,15 +103,20 @@ export function MyUpcomingGamesCarousel() {
                       {isPending ? 'Pending' : 'Joined'}
                     </span>
                   </div>
-                  <p className="line-clamp-2 font-semibold">{item.activity.title}</p>
-                  <p className="text-muted-foreground text-xs">by @{item.creator.username}</p>
+                  <div className="space-y-1.5">
+                    <p className="line-clamp-2 text-base leading-snug font-semibold">{item.activity.title}</p>
+                    <p className="text-muted-foreground text-xs">Hosted by @{item.creator.username}</p>
+                  </div>
                   <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
                     <CalendarClock className="size-3 shrink-0" />
                     <span className="line-clamp-1">{formatGameTime(item.activity.startTime)}</span>
                   </div>
+                  <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                    <MapPin className="size-3 shrink-0" />
+                    <span className="line-clamp-1">{locationLabel ?? 'Club pending'}</span>
+                  </div>
                 </div>
 
-                {/* Spots + Level */}
                 <div className="flex flex-wrap items-center gap-1.5">
                   <Badge variant="secondary" className="h-5 text-[10px]">
                     {spotsLeft} spot{spotsLeft !== 1 ? 's' : ''}
@@ -120,28 +127,37 @@ export function MyUpcomingGamesCarousel() {
                   </Badge>
                 </div>
 
-                {/* Action button */}
-                {isPending ? (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    disabled={isBusy || !item.requestId}
-                    onClick={() => handleDiscard(item.activity._id, item.requestId)}
-                    className="text-muted-foreground hover:text-foreground h-8 text-xs"
-                  >
-                    {isBusy ? 'Cancelling...' : 'Discard request'}
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={isBusy}
-                    onClick={() => handleLeave(item.activity._id)}
-                    className="text-destructive hover:text-destructive border-destructive/30 hover:border-destructive/60 hover:bg-destructive/5 h-8 text-xs"
-                  >
-                    {isBusy ? 'Leaving...' : 'Leave'}
-                  </Button>
-                )}
+                <div className="grid gap-2 sm:flex sm:flex-wrap">
+                  <GameDetailsSheet
+                    activityId={item.activity._id}
+                    trigger={
+                      <Button size="sm" variant="outline" className="h-10 w-full text-xs sm:w-auto">
+                        View game
+                      </Button>
+                    }
+                  />
+                  {isPending ? (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={isBusy || !item.requestId}
+                      onClick={() => handleDiscard(item.activity._id, item.requestId)}
+                      className="text-muted-foreground hover:text-foreground h-10 w-full text-xs sm:w-auto"
+                    >
+                      {isBusy ? 'Cancelling...' : 'Discard request'}
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={isBusy}
+                      onClick={() => handleLeave(item.activity._id)}
+                      className="text-destructive hover:text-destructive border-destructive/30 hover:border-destructive/60 hover:bg-destructive/5 h-10 w-full text-xs sm:w-auto"
+                    >
+                      {isBusy ? 'Leaving...' : 'Leave'}
+                    </Button>
+                  )}
+                </div>
               </div>
             </CarouselItem>
           );

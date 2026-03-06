@@ -150,7 +150,6 @@ export function SportPassportCard({ profile, className, isEditable = true }: Spo
             homeClubId: profile.homeClubId,
             playtomicRating: profile.playtomicRating,
             wprRating: profile.wprRating,
-            hand: profile.attributes?.hand ?? 'Right',
             courtSide: profile.attributes?.courtSide,
             preferredGender: profile.preferredGender ?? 'Any',
             availability: profile.availability

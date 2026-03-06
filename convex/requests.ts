@@ -73,16 +73,14 @@ export const createRequest = zMutation({
       }
     }
 
-    const requestId =
-      existingRequest?._id ??
-      (await ctx.db.insert('requests', {
-        activityId: args.activityId,
-        userId,
-        hostId: activity.creatorId,
-        status: 'PENDING',
-        message: args.message,
-        respondedAt: undefined
-      }));
+    const requestId = existingRequest?._id ?? (await ctx.db.insert('requests', {
+      activityId: args.activityId,
+      userId,
+      hostId: activity.creatorId,
+      status: 'PENDING',
+      message: args.message,
+      respondedAt: undefined
+    }));
 
     if (existingRequest) {
       await ctx.db.patch('requests', requestId, {

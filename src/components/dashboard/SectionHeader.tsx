@@ -9,7 +9,7 @@ interface SectionHeaderProps {
 
 export function SectionHeader({ label, linkHref, linkLabel }: SectionHeaderProps) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
       <span className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">{label}</span>
       {linkHref && (
         <Link

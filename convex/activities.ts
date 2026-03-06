@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import type { Id } from './_generated/dataModel';
 import { api } from './_generated/api';
 import { enrichActivitiesWithCreators } from './lib/helpers';
 import {
