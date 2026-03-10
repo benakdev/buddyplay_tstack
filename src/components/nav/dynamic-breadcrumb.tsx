@@ -9,7 +9,7 @@ const PAGE_NAMES: Record<string, string> = {
   dashboard: 'Dashboard',
   finder: 'Finder',
   inbox: 'Inbox',
-  alerts: 'Alerts',
+  notifications: 'Notifications',
   'my-games': 'My Games',
   profile: 'Profile'
 };

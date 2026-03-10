@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useQuery } from 'convex/react';
 import { Bell, CalendarDays } from 'lucide-react';
 
-import { AlertCard, NotificationItem } from '@/components/alerts';
+import { AlertCard } from '@/components/alerts';
 import { HostActionsWidget } from '@/components/dashboard/HostActionsWidget';
 import { MyUpcomingGamesCarousel } from '@/components/dashboard/MyUpcomingGamesCarousel';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
@@ -15,17 +15,6 @@ export const Route = createFileRoute('/_app/my-games')({
 
 function MyGamesPage() {
   const alerts = useQuery(api.alerts.getMyAlerts);
-  const notifications = useQuery(api.notifications.getMyNotificationsEnriched, {
-    limit: 50
-  });
-
-  const isVisibleNotification = (item: NonNullable<typeof notifications>[number]) =>
-    item.notification.type !== 'MESSAGE' &&
-    (item.notification.type !== 'PLAYER_MATCH' ||
-      item.notification.matchStatus === 'ACTIVE' ||
-      item.notification.matchStatus === undefined);
-
-  const visibleNotifications = notifications?.filter(isVisibleNotification) ?? [];
 
   return (
     <div className="container max-w-5xl space-y-6 px-4 py-4 sm:space-y-8 sm:py-8">
@@ -79,33 +68,6 @@ function MyGamesPage() {
             alerts.map(alert => <AlertCard key={alert._id} alert={alert} />)
           )}
         </div>
-      </section>
-
-      <section className="border-border/70 bg-card/70 space-y-4 rounded-3xl border p-4 shadow-sm sm:p-6">
-        <h2 className="text-xl font-semibold">Recent Activity</h2>
-        {notifications === undefined ? (
-          <div className="space-y-2">
-            <Skeleton className="h-24 rounded-2xl" />
-            <Skeleton className="h-24 rounded-2xl" />
-            <Skeleton className="h-24 rounded-2xl" />
-          </div>
-        ) : visibleNotifications.length === 0 ? (
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <Bell />
-              </EmptyMedia>
-              <EmptyTitle>No game activity yet</EmptyTitle>
-              <EmptyDescription>Game updates, request decisions, and match alerts will appear here.</EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        ) : (
-          <div className="space-y-2">
-            {visibleNotifications.map(item => (
-              <NotificationItem key={item.notification._id} item={item} />
-            ))}
-          </div>
-        )}
       </section>
     </div>
   );

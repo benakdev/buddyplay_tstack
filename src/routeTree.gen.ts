@@ -16,11 +16,11 @@ import { Route as UUsernameRouteImport } from './routes/u.$username'
 import { Route as ApiUsersRouteImport } from './routes/api.users'
 import { Route as ApiHealthRouteImport } from './routes/api.health'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
+import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
 import { Route as AppMyGamesRouteImport } from './routes/_app.my-games'
 import { Route as AppInboxRouteImport } from './routes/_app.inbox'
 import { Route as AppFinderRouteImport } from './routes/_app.finder'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
-import { Route as AppAlertsRouteImport } from './routes/_app.alerts'
 import { Route as ApiAccountDeleteRouteImport } from './routes/api.account.delete'
 
 const SsoCallbackRoute = SsoCallbackRouteImport.update({
@@ -57,6 +57,11 @@ const AppProfileRoute = AppProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
+const AppNotificationsRoute = AppNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMyGamesRoute = AppMyGamesRouteImport.update({
   id: '/my-games',
   path: '/my-games',
@@ -77,11 +82,6 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAlertsRoute = AppAlertsRouteImport.update({
-  id: '/alerts',
-  path: '/alerts',
-  getParentRoute: () => AppRoute,
-} as any)
 const ApiAccountDeleteRoute = ApiAccountDeleteRouteImport.update({
   id: '/api/account/delete',
   path: '/api/account/delete',
@@ -91,11 +91,11 @@ const ApiAccountDeleteRoute = ApiAccountDeleteRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/sso-callback': typeof SsoCallbackRoute
-  '/alerts': typeof AppAlertsRoute
   '/dashboard': typeof AppDashboardRoute
   '/finder': typeof AppFinderRoute
   '/inbox': typeof AppInboxRoute
   '/my-games': typeof AppMyGamesRoute
+  '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/api/health': typeof ApiHealthRoute
   '/api/users': typeof ApiUsersRoute
@@ -105,11 +105,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/sso-callback': typeof SsoCallbackRoute
-  '/alerts': typeof AppAlertsRoute
   '/dashboard': typeof AppDashboardRoute
   '/finder': typeof AppFinderRoute
   '/inbox': typeof AppInboxRoute
   '/my-games': typeof AppMyGamesRoute
+  '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/api/health': typeof ApiHealthRoute
   '/api/users': typeof ApiUsersRoute
@@ -121,11 +121,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/sso-callback': typeof SsoCallbackRoute
-  '/_app/alerts': typeof AppAlertsRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/finder': typeof AppFinderRoute
   '/_app/inbox': typeof AppInboxRoute
   '/_app/my-games': typeof AppMyGamesRoute
+  '/_app/notifications': typeof AppNotificationsRoute
   '/_app/profile': typeof AppProfileRoute
   '/api/health': typeof ApiHealthRoute
   '/api/users': typeof ApiUsersRoute
@@ -137,11 +137,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/sso-callback'
-    | '/alerts'
     | '/dashboard'
     | '/finder'
     | '/inbox'
     | '/my-games'
+    | '/notifications'
     | '/profile'
     | '/api/health'
     | '/api/users'
@@ -151,11 +151,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/sso-callback'
-    | '/alerts'
     | '/dashboard'
     | '/finder'
     | '/inbox'
     | '/my-games'
+    | '/notifications'
     | '/profile'
     | '/api/health'
     | '/api/users'
@@ -166,11 +166,11 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/sso-callback'
-    | '/_app/alerts'
     | '/_app/dashboard'
     | '/_app/finder'
     | '/_app/inbox'
     | '/_app/my-games'
+    | '/_app/notifications'
     | '/_app/profile'
     | '/api/health'
     | '/api/users'
@@ -239,6 +239,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/notifications': {
+      id: '/_app/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AppNotificationsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/my-games': {
       id: '/_app/my-games'
       path: '/my-games'
@@ -267,13 +274,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/alerts': {
-      id: '/_app/alerts'
-      path: '/alerts'
-      fullPath: '/alerts'
-      preLoaderRoute: typeof AppAlertsRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/api/account/delete': {
       id: '/api/account/delete'
       path: '/api/account/delete'
@@ -285,20 +285,20 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
-  AppAlertsRoute: typeof AppAlertsRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppFinderRoute: typeof AppFinderRoute
   AppInboxRoute: typeof AppInboxRoute
   AppMyGamesRoute: typeof AppMyGamesRoute
+  AppNotificationsRoute: typeof AppNotificationsRoute
   AppProfileRoute: typeof AppProfileRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppAlertsRoute: AppAlertsRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppFinderRoute: AppFinderRoute,
   AppInboxRoute: AppInboxRoute,
   AppMyGamesRoute: AppMyGamesRoute,
+  AppNotificationsRoute: AppNotificationsRoute,
   AppProfileRoute: AppProfileRoute,
 }
 

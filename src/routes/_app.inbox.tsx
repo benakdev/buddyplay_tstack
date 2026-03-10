@@ -3,7 +3,7 @@ import * as React from 'react';
 import { useUser } from '@clerk/tanstack-react-start';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useMutation, useQuery } from 'convex/react';
-import { ArrowLeft, Bell, MessageCircle, Send } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Send } from 'lucide-react';
 
 import { Chat as ChatRoot } from '@/components/chat/chat';
 import {
@@ -78,17 +78,8 @@ function InboxPage() {
     api.messages.getMessages,
     activeConversationId ? { conversationId: activeConversationId, limit: 100 } : 'skip'
   );
-  const notifications = useQuery(api.notifications.getMyNotificationsEnriched, {
-    limit: 50
-  });
-
   const sendMessage = useMutation(api.messages.sendMessage);
-  const markNotificationAsRead = useMutation(api.notifications.markAsRead);
   const [messageText, setMessageText] = React.useState('');
-
-  const messageAlerts = React.useMemo(() => {
-    return (notifications ?? []).filter(item => item.notification.type === 'MESSAGE').slice(0, 6);
-  }, [notifications]);
 
   const isLoading = conversationsData === undefined;
   const conversations: ChatListConversation[] = React.useMemo(() => {
@@ -105,7 +96,9 @@ function InboxPage() {
 
       const displayName =
         conv.type === 'DM'
-          ? (dmOtherParticipant ? getUserDisplayName(dmOtherParticipant) : 'Conversation')
+          ? dmOtherParticipant
+            ? getUserDisplayName(dmOtherParticipant)
+            : 'Conversation'
           : conv.type === 'ACTIVITY'
             ? (conv.name ?? 'Group Chat')
             : participants.length > 0
@@ -136,14 +129,6 @@ function InboxPage() {
 
   const handleBack = () => {
     void navigate({ to: '/inbox', search: { conversationId: undefined } });
-  };
-
-  const handleOpenMessageAlert = async (conversationId: string, notificationId: string) => {
-    await markNotificationAsRead({ notificationId: notificationId as Id<'notifications'> });
-    void navigate({
-      to: '/inbox',
-      search: { conversationId }
-    });
   };
 
   const handleSend = async () => {
@@ -203,39 +188,6 @@ function InboxPage() {
         <div className="border-b px-4 py-3">
           <h1 className="text-lg font-semibold">Inbox</h1>
         </div>
-        {messageAlerts && messageAlerts.length > 0 && (
-          <div className="border-b px-3 py-3">
-            <div className="mb-2 flex items-center gap-2 px-1">
-              <Bell className="text-muted-foreground size-4" />
-              <span className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
-                Message Alerts
-              </span>
-            </div>
-            <div className="space-y-2">
-              {messageAlerts.map(item => {
-                const data = item.notification.data as { conversationId?: Id<'conversations'> } | undefined;
-                if (!data?.conversationId) {
-                  return null;
-                }
-
-                return (
-                  <button
-                    key={item.notification._id}
-                    type="button"
-                    className={cn(
-                      'hover:bg-muted/60 flex w-full flex-col items-start rounded-xl border px-3 py-2 text-left transition-colors',
-                      !item.notification.read && 'bg-primary/5'
-                    )}
-                    onClick={() => handleOpenMessageAlert(String(data.conversationId), String(item.notification._id))}
-                  >
-                    <span className="text-sm font-medium">{item.notification.title}</span>
-                    <span className="text-muted-foreground line-clamp-2 text-xs">{item.notification.body}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
         <ChatList
           conversations={conversations}
           activeId={activeConversationId}
