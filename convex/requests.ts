@@ -4,7 +4,7 @@ import { incrementUnreadCount } from './lib/notifications';
 import { requestStatusSchema, sportTypeSchema } from './lib/validation/sharedSchemas';
 import { zMutation, zQuery, zid } from './lib/zodHelpers';
 import { paginationOptsSchema, requestSchema } from './lib/zodSchemas';
-import { requireUser } from './users';
+import { getCurrentAuthenticatedUser, requireUser } from './users';
 
 function formatRequestBody(
   requesterUsername: string | undefined,
@@ -125,7 +125,10 @@ export const getPendingRequests = zQuery({
       request: requestSchema,
       requester: z.object({
         _id: zid('users'),
-        username: z.string()
+        username: z.string(),
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
+        profileUrl: z.string().optional()
       }),
       activity: z.object({
         _id: zid('activities'),
@@ -134,16 +137,7 @@ export const getPendingRequests = zQuery({
     })
   ),
   handler: async ctx => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return [];
-    }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_token', q => q.eq('tokenIdentifier', identity.tokenIdentifier))
-      .unique();
-
+    const user = await getCurrentAuthenticatedUser(ctx);
     if (!user) {
       return [];
     }
@@ -166,7 +160,13 @@ export const getPendingRequests = zQuery({
 
     const results: Array<{
       request: (typeof requests)[number];
-      requester: { _id: (typeof requests)[number]['userId']; username: string };
+      requester: {
+        _id: (typeof requests)[number]['userId'];
+        username: string;
+        firstName?: string;
+        lastName?: string;
+        profileUrl?: string;
+      };
       activity: { _id: (typeof requests)[number]['activityId']; title: string };
     }> = [];
 
@@ -179,7 +179,10 @@ export const getPendingRequests = zQuery({
           request,
           requester: {
             _id: requester._id,
-            username: requester.username
+            username: requester.username,
+            firstName: requester.firstName,
+            lastName: requester.lastName,
+            profileUrl: requester.profileUrl
           },
           activity: {
             _id: activity._id,
@@ -211,16 +214,7 @@ export const getMyRequests = zQuery({
     })
   ),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return [];
-    }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_token', q => q.eq('tokenIdentifier', identity.tokenIdentifier))
-      .unique();
-
+    const user = await getCurrentAuthenticatedUser(ctx);
     if (!user) {
       return [];
     }
@@ -294,16 +288,7 @@ export const getMyRequestsPaginated = zQuery({
     continueCursor: z.string().nullable()
   }),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return { page: [], isDone: true, continueCursor: null };
-    }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_token', q => q.eq('tokenIdentifier', identity.tokenIdentifier))
-      .unique();
-
+    const user = await getCurrentAuthenticatedUser(ctx);
     if (!user) {
       return { page: [], isDone: true, continueCursor: null };
     }

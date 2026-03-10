@@ -54,6 +54,10 @@ export const privacySettingsSchema = z.object({
 export const userTableSchema = z.object({
   tokenIdentifier: z.string(),
   username: usernameSchema,
+  firstName: z.string().min(1).optional(),
+  lastName: z.string().min(1).optional(),
+  profileUrl: z.url().optional(),
+  deletedAt: z.number().int().positive().optional(),
   gender: genderSchema.optional(),
   age: z.number().int().min(13).max(120).optional(),
   dominantHand: handSchema.optional(),
@@ -77,6 +81,14 @@ export const userUpdateSchema = userTableSchema
     bio: true,
     location: true,
     privacySettings: true
+  })
+  .partial();
+
+export const clerkProfileSyncSchema = userTableSchema
+  .pick({
+    firstName: true,
+    lastName: true,
+    profileUrl: true
   })
   .partial();
 
@@ -255,7 +267,10 @@ export const messageSchema = messageTableSchema.extend({
 // Result schemas for enriched queries
 export const creatorSchema = z.object({
   _id: zid('users'),
-  username: z.string().min(1)
+  username: z.string().min(1),
+  firstName: z.string().min(1).optional(),
+  lastName: z.string().min(1).optional(),
+  profileUrl: z.url().optional()
 });
 
 export const activityWithCreatorSchema = z.object({

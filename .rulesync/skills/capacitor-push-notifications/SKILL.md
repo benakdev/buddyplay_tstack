@@ -44,26 +44,26 @@ async function initPushNotifications() {
   }
 
   // Get FCM token
-  PushNotifications.addListener('registration', (token) => {
+  PushNotifications.addListener('registration', token => {
     console.log('Push token:', token.value);
     // Send token to your server
     sendTokenToServer(token.value);
   });
 
   // Handle registration error
-  PushNotifications.addListener('registrationError', (error) => {
+  PushNotifications.addListener('registrationError', error => {
     console.error('Registration error:', error);
   });
 
   // Handle incoming notification (foreground)
-  PushNotifications.addListener('pushNotificationReceived', (notification) => {
+  PushNotifications.addListener('pushNotificationReceived', notification => {
     console.log('Notification received:', notification);
     // Show in-app notification
     showInAppNotification(notification);
   });
 
   // Handle notification tap
-  PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+  PushNotifications.addListener('pushNotificationActionPerformed', action => {
     console.log('Notification action:', action);
     // Navigate based on notification data
     handleNotificationTap(action.notification);
@@ -139,6 +139,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 ### 4. iOS Capabilities
 
 In Xcode:
+
 1. Select App target
 2. Signing & Capabilities
 3. Add "Push Notifications"
@@ -171,7 +172,7 @@ import admin from 'firebase-admin';
 
 // Initialize
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(serviceAccount)
 });
 
 // Send to single device
@@ -180,28 +181,28 @@ async function sendToDevice(token: string) {
     token,
     notification: {
       title: 'Hello!',
-      body: 'You have a new message',
+      body: 'You have a new message'
     },
     data: {
       type: 'message',
-      messageId: '123',
+      messageId: '123'
     },
     android: {
       priority: 'high',
       notification: {
         channelId: 'messages',
         icon: 'ic_notification',
-        color: '#4285f4',
-      },
+        color: '#4285f4'
+      }
     },
     apns: {
       payload: {
         aps: {
           badge: 1,
-          sound: 'default',
-        },
-      },
-    },
+          sound: 'default'
+        }
+      }
+    }
   });
 }
 
@@ -211,8 +212,8 @@ async function sendToTopic(topic: string) {
     topic,
     notification: {
       title: 'Breaking News',
-      body: 'Something important happened',
-    },
+      body: 'Something important happened'
+    }
   });
 }
 
@@ -222,8 +223,8 @@ async function sendToMultiple(tokens: string[]) {
     tokens,
     notification: {
       title: 'Update',
-      body: 'New features available',
-    },
+      body: 'New features available'
+    }
   });
 }
 ```
@@ -263,7 +264,7 @@ await PushNotifications.createChannel({
   sound: 'notification.wav',
   vibration: true,
   lights: true,
-  lightColor: '#FF0000',
+  lightColor: '#FF0000'
 });
 
 // Delete channel
@@ -321,7 +322,7 @@ class NotificationService: UNNotificationServiceExtension {
 
 ```typescript
 // Handle action buttons
-PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+PushNotifications.addListener('pushNotificationActionPerformed', action => {
   switch (action.actionId) {
     case 'reply':
       // Handle reply action
@@ -375,16 +376,16 @@ class FirebaseService : FirebaseMessagingService() {
 import { LocalNotifications } from '@capacitor/local-notifications';
 
 // Show local notification when in foreground
-PushNotifications.addListener('pushNotificationReceived', async (notification) => {
+PushNotifications.addListener('pushNotificationReceived', async notification => {
   await LocalNotifications.schedule({
     notifications: [
       {
         id: Date.now(),
         title: notification.title || '',
         body: notification.body || '',
-        extra: notification.data,
-      },
-    ],
+        extra: notification.data
+      }
+    ]
   });
 });
 ```
@@ -422,7 +423,7 @@ async function requestNotificationPermission() {
 
 ```typescript
 // Handle token refresh
-PushNotifications.addListener('registration', async (token) => {
+PushNotifications.addListener('registration', async token => {
   const oldToken = await getStoredToken();
 
   if (oldToken !== token.value) {
@@ -436,12 +437,12 @@ PushNotifications.addListener('registration', async (token) => {
 ### Error Handling
 
 ```typescript
-PushNotifications.addListener('registrationError', (error) => {
+PushNotifications.addListener('registrationError', error => {
   console.error('Push registration failed:', error);
 
   // Log to analytics
   analytics.logEvent('push_registration_failed', {
-    error: error.error,
+    error: error.error
   });
 
   // Retry with backoff
@@ -469,13 +470,13 @@ PushNotifications.addListener('registrationError', (error) => {
 
 ### Common Issues
 
-| Issue | Solution |
-|-------|----------|
-| No token | Check permissions, network |
-| Foreground only | Implement background handler |
-| Delayed delivery | Use high priority, data-only |
-| No sound | Configure notification channel |
-| Badge not updating | Set badge in payload |
+| Issue              | Solution                       |
+| ------------------ | ------------------------------ |
+| No token           | Check permissions, network     |
+| Foreground only    | Implement background handler   |
+| Delayed delivery   | Use high priority, data-only   |
+| No sound           | Configure notification channel |
+| Badge not updating | Set badge in payload           |
 
 ## Resources
 

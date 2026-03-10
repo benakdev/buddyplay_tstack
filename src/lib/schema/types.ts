@@ -27,13 +27,11 @@ export type Availability = z.infer<typeof availabilitySchema>;
 
 /**
  * ProfileData type derived from Convex user schema.
- * Combines Convex user fields with Clerk-derived fields for public profile display.
+ * Combines Convex user fields with a Convex-derived display name for public profile display.
  */
-export type ProfileData = Pick<Doc<'users'>, 'username' | 'bio' | 'location'> & {
-  /** Derived from Clerk firstName + lastName */
+export type ProfileData = Pick<Doc<'users'>, 'username' | 'bio' | 'location' | 'profileUrl'> & {
+  /** Derived from Convex user profile fields and privacy settings */
   name: string;
-  /** From Clerk user profile */
-  imageUrl: string;
   /** User account creation timestamp (from Convex _creationTime) */
   joinedAt: number;
 };

@@ -246,11 +246,12 @@ export interface ChatEventAvatarProps {
  * />
  * ```
  */
-export function ChatEventAvatar({ className, tokenIdentifier, username }: ChatEventAvatarProps) {
-  if (tokenIdentifier) {
+export function ChatEventAvatar({ className, tokenIdentifier, username, src }: ChatEventAvatarProps) {
+  if (tokenIdentifier || src) {
     return (
       <UserAvatar
         className={cn('size-8 rounded-full @md/chat:size-10', className)}
+        profileUrl={src}
         tokenIdentifier={tokenIdentifier}
         username={username || 'User'}
         fallbackClassName="text-xs"
@@ -262,6 +263,7 @@ export function ChatEventAvatar({ className, tokenIdentifier, username }: ChatEv
   return (
     <UserAvatar
       className={cn('size-8 rounded-full @md/chat:size-10', className)}
+      profileUrl={src}
       tokenIdentifier=""
       username={username || 'User'}
       fallbackClassName="text-xs"

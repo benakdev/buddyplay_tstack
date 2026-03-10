@@ -14,6 +14,8 @@ VITE_CLERK_PUBLISHABLE_KEY=pk_...
 CLERK_SECRET_KEY=sk_...
 CLERK_JWT_ISSUER_DOMAIN=https://flowing-cub-56.clerk.accounts.dev
 VITE_CLERK_AFTER_SIGN_OUT_URL=/
+VITE_CONVEX_URL=https://your-deployment.convex.cloud
+CONVEX_ADMIN_KEY=your-convex-admin-key
 ```
 
 Android requirements:

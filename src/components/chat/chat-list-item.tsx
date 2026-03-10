@@ -32,6 +32,7 @@ export interface ChatListItemProps {
  */
 export function ChatListItem({
   name,
+  avatarUrl,
   tokenIdentifier,
   lastMessage,
   lastMessageAt,
@@ -55,6 +56,7 @@ export function ChatListItem({
     >
       <UserAvatar
         className="size-10 shrink-0"
+        profileUrl={avatarUrl}
         tokenIdentifier={tokenIdentifier || ''}
         username={name}
         fallbackClassName="text-xs"

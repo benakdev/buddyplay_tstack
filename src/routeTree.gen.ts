@@ -21,6 +21,7 @@ import { Route as AppInboxRouteImport } from './routes/_app.inbox'
 import { Route as AppFinderRouteImport } from './routes/_app.finder'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppAlertsRouteImport } from './routes/_app.alerts'
+import { Route as ApiAccountDeleteRouteImport } from './routes/api.account.delete'
 
 const SsoCallbackRoute = SsoCallbackRouteImport.update({
   id: '/sso-callback',
@@ -81,6 +82,11 @@ const AppAlertsRoute = AppAlertsRouteImport.update({
   path: '/alerts',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiAccountDeleteRoute = ApiAccountDeleteRouteImport.update({
+  id: '/api/account/delete',
+  path: '/api/account/delete',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/api/health': typeof ApiHealthRoute
   '/api/users': typeof ApiUsersRoute
   '/u/$username': typeof UUsernameRoute
+  '/api/account/delete': typeof ApiAccountDeleteRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/api/health': typeof ApiHealthRoute
   '/api/users': typeof ApiUsersRoute
   '/u/$username': typeof UUsernameRoute
+  '/api/account/delete': typeof ApiAccountDeleteRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/api/health': typeof ApiHealthRoute
   '/api/users': typeof ApiUsersRoute
   '/u/$username': typeof UUsernameRoute
+  '/api/account/delete': typeof ApiAccountDeleteRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/api/users'
     | '/u/$username'
+    | '/api/account/delete'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/api/users'
     | '/u/$username'
+    | '/api/account/delete'
   id:
     | '__root__'
     | '/'
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/api/users'
     | '/u/$username'
+    | '/api/account/delete'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -173,6 +185,7 @@ export interface RootRouteChildren {
   ApiHealthRoute: typeof ApiHealthRoute
   ApiUsersRoute: typeof ApiUsersRoute
   UUsernameRoute: typeof UUsernameRoute
+  ApiAccountDeleteRoute: typeof ApiAccountDeleteRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -261,6 +274,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAlertsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/account/delete': {
+      id: '/api/account/delete'
+      path: '/api/account/delete'
+      fullPath: '/api/account/delete'
+      preLoaderRoute: typeof ApiAccountDeleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -291,6 +311,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiHealthRoute: ApiHealthRoute,
   ApiUsersRoute: ApiUsersRoute,
   UUsernameRoute: UUsernameRoute,
+  ApiAccountDeleteRoute: ApiAccountDeleteRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

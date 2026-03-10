@@ -567,6 +567,9 @@ export const findMatchingPlayers = zQuery({
 			user: z.object({
 				_id: zid("users"),
 				username: z.string(),
+				firstName: z.string().optional(),
+				lastName: z.string().optional(),
+				profileUrl: z.string().optional(),
 			}),
 			score: z.number(),
 		}),
@@ -601,7 +604,13 @@ export const findMatchingPlayers = zQuery({
 		// Enrich with user data, excluding current user
 		const results: Array<{
 			profile: (typeof profiles)[number];
-			user: { _id: (typeof profiles)[number]["userId"]; username: string };
+			user: {
+				_id: (typeof profiles)[number]["userId"];
+				username: string;
+				firstName?: string;
+				lastName?: string;
+				profileUrl?: string;
+			};
 			score: number;
 		}> = [];
 
@@ -722,6 +731,9 @@ export const findMatchingPlayers = zQuery({
 				user: {
 					_id: user._id,
 					username: user.username,
+					firstName: user.firstName,
+					lastName: user.lastName,
+					profileUrl: user.profileUrl,
 				},
 				score,
 			});

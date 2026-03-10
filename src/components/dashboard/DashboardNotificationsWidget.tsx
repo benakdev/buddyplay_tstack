@@ -89,13 +89,13 @@ function NotifCard({
       const target =
         data?.matchingUserId ?? data?.actorUserId ?? data?.senderId ?? data?.requesterId ?? data?.userId ?? actor?._id;
       if (!target) {
-        void navigate({ to: '/inbox' });
+        void navigate({ to: '/inbox', search: { conversationId: undefined } });
         return;
       }
       const convId = await createDM({ otherUserId: target });
       void navigate({ to: '/inbox', search: { conversationId: String(convId) } });
     } catch {
-      void navigate({ to: '/inbox' });
+      void navigate({ to: '/inbox', search: { conversationId: undefined } });
     } finally {
       setDmLoading(false);
     }

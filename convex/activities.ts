@@ -19,7 +19,7 @@ import {
   paginationOptsSchema,
   requirementsUpdateSchema
 } from './lib/zodSchemas';
-import { requireUser } from './users';
+import { getCurrentAuthenticatedUser, requireUser } from './users';
 
 /**
  * Create a new activity (game).
@@ -224,16 +224,7 @@ export const listMyActivities = zQuery({
   },
   returns: z.array(activitySchema),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return [];
-    }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_token', q => q.eq('tokenIdentifier', identity.tokenIdentifier))
-      .unique();
-
+    const user = await getCurrentAuthenticatedUser(ctx);
     if (!user) {
       return [];
     }
@@ -269,16 +260,7 @@ export const listMyActivitiesPaginated = zQuery({
     continueCursor: z.string().nullable()
   }),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return { page: [], isDone: true, continueCursor: null };
-    }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_token', q => q.eq('tokenIdentifier', identity.tokenIdentifier))
-      .unique();
-
+    const user = await getCurrentAuthenticatedUser(ctx);
     if (!user) {
       return { page: [], isDone: true, continueCursor: null };
     }
@@ -595,6 +577,9 @@ export const getActivityParticipants = zQuery({
       _id: zid('activityParticipants'),
       userId: zid('users'),
       username: z.string(),
+      firstName: z.string().optional(),
+      lastName: z.string().optional(),
+      profileUrl: z.string().optional(),
       status: participantStatusSchema,
       joinedVia: joinedViaSchema.optional()
     })
@@ -613,6 +598,9 @@ export const getActivityParticipants = zQuery({
       _id: (typeof participants)[number]['_id'];
       userId: (typeof participants)[number]['userId'];
       username: string;
+      firstName?: string;
+      lastName?: string;
+      profileUrl?: string;
       status: (typeof participants)[number]['status'];
       joinedVia: (typeof participants)[number]['joinedVia'];
     }> = [];
@@ -624,6 +612,9 @@ export const getActivityParticipants = zQuery({
           _id: p._id,
           userId: p.userId,
           username: user.username,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          profileUrl: user.profileUrl,
           status: p.status,
           joinedVia: p.joinedVia
         });
@@ -650,16 +641,7 @@ export const listMyUpcomingActivities = zQuery({
   },
   returns: z.array(myUpcomingActivitySchema),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return [];
-    }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_token', q => q.eq('tokenIdentifier', identity.tokenIdentifier))
-      .unique();
-
+    const user = await getCurrentAuthenticatedUser(ctx);
     if (!user) {
       return [];
     }

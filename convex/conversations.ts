@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { conversationTypeSchema } from './lib/validation/sharedSchemas';
 import { zMutation, zQuery, zid } from './lib/zodHelpers';
 import { conversationSchema } from './lib/zodSchemas';
-import { requireUser } from './users';
+import { getCurrentAuthenticatedUser, requireUser } from './users';
 
 /**
  * Create a new conversation.
@@ -199,22 +199,16 @@ export const getMyConversations = zQuery({
         z.object({
           _id: zid('users'),
           username: z.string(),
-          tokenIdentifier: z.string()
+          firstName: z.string().optional(),
+          lastName: z.string().optional(),
+          tokenIdentifier: z.string(),
+          profileUrl: z.string().optional()
         })
       )
     })
   ),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return [];
-    }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_token', q => q.eq('tokenIdentifier', identity.tokenIdentifier))
-      .unique();
-
+    const user = await getCurrentAuthenticatedUser(ctx);
     if (!user) {
       return [];
     }
@@ -229,7 +223,14 @@ export const getMyConversations = zQuery({
 
     const results: Array<{
       conversation: Awaited<ReturnType<typeof ctx.db.get<'conversations'>>> & {};
-      participants: Array<{ _id: typeof user._id; username: string; tokenIdentifier: string }>;
+      participants: Array<{
+        _id: typeof user._id;
+        username: string;
+        firstName?: string;
+        lastName?: string;
+        tokenIdentifier: string;
+        profileUrl?: string;
+      }>;
     }> = [];
 
     for (const participation of participations) {
@@ -246,14 +247,24 @@ export const getMyConversations = zQuery({
       const participantUsersDocs = await Promise.all(participantIds.map(id => ctx.db.get('users', id)));
       const participantById = new Map(participantUsersDocs.filter(Boolean).map(p => [p!._id, p!]));
 
-      const participantUsers: Array<{ _id: typeof user._id; username: string; tokenIdentifier: string }> = [];
+      const participantUsers: Array<{
+        _id: typeof user._id;
+        username: string;
+        firstName?: string;
+        lastName?: string;
+        tokenIdentifier: string;
+        profileUrl?: string;
+      }> = [];
       for (const p of allParticipants) {
         const participantUser = participantById.get(p.userId);
         if (participantUser) {
           participantUsers.push({
             _id: participantUser._id,
             username: participantUser.username,
-            tokenIdentifier: participantUser.tokenIdentifier
+            firstName: participantUser.firstName,
+            lastName: participantUser.lastName,
+            tokenIdentifier: participantUser.tokenIdentifier,
+            profileUrl: participantUser.profileUrl
           });
         }
       }
@@ -289,22 +300,16 @@ export const getConversation = zQuery({
         z.object({
           _id: zid('users'),
           username: z.string(),
-          tokenIdentifier: z.string()
+          firstName: z.string().optional(),
+          lastName: z.string().optional(),
+          tokenIdentifier: z.string(),
+          profileUrl: z.string().optional()
         })
       )
     })
     .nullable(),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return null;
-    }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_token', q => q.eq('tokenIdentifier', identity.tokenIdentifier))
-      .unique();
-
+    const user = await getCurrentAuthenticatedUser(ctx);
     if (!user) {
       return null;
     }
@@ -336,14 +341,24 @@ export const getConversation = zQuery({
     const participantUsersDocs = await Promise.all(participantIds.map(id => ctx.db.get('users', id)));
     const participantById = new Map(participantUsersDocs.filter(Boolean).map(p => [p!._id, p!]));
 
-    const participantUsers: Array<{ _id: typeof user._id; username: string; tokenIdentifier: string }> = [];
+    const participantUsers: Array<{
+      _id: typeof user._id;
+      username: string;
+      firstName?: string;
+      lastName?: string;
+      tokenIdentifier: string;
+      profileUrl?: string;
+    }> = [];
     for (const p of allParticipants) {
       const participantUser = participantById.get(p.userId);
       if (participantUser) {
         participantUsers.push({
           _id: participantUser._id,
           username: participantUser.username,
-          tokenIdentifier: participantUser.tokenIdentifier
+          firstName: participantUser.firstName,
+          lastName: participantUser.lastName,
+          tokenIdentifier: participantUser.tokenIdentifier,
+          profileUrl: participantUser.profileUrl
         });
       }
     }

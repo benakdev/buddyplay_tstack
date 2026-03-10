@@ -13,13 +13,14 @@ import { Button } from '@/components/ui/button';
 import { UserAvatar } from '@/components/user-avatar';
 import { api } from '@/convex/_generated/api';
 import type { Doc, Id } from '@/convex/_generated/dataModel';
+import { getUserDisplayName } from '@/lib/user-display';
 import { cn } from '@/lib/utils';
 
 interface NotificationData {
   actorUserId?: Id<'users'>;
   userId?: Id<'users'>;
   username?: string;
-  imageUrl?: string;
+  profileUrl?: string;
   conversationId?: Id<'conversations'>;
   senderId?: Id<'users'>;
   requesterId?: Id<'users'>;
@@ -31,7 +32,10 @@ interface NotificationData {
 interface NotificationActor {
   _id: Id<'users'>;
   username: string;
+  firstName?: string;
+  lastName?: string;
   tokenIdentifier: string;
+  profileUrl?: string;
 }
 
 interface NotificationItemProps {
@@ -91,7 +95,7 @@ export function NotificationItem({ item, className }: NotificationItemProps) {
       const targetUserId =
         data?.matchingUserId ?? data?.actorUserId ?? data?.senderId ?? data?.requesterId ?? data?.userId ?? actor?._id;
       if (!targetUserId) {
-        void navigate({ to: '/inbox' });
+        void navigate({ to: '/inbox', search: { conversationId: undefined } });
         return;
       }
 
@@ -101,7 +105,7 @@ export function NotificationItem({ item, className }: NotificationItemProps) {
         search: { conversationId: String(conversationId) }
       });
     } catch {
-      void navigate({ to: '/inbox' });
+      void navigate({ to: '/inbox', search: { conversationId: undefined } });
     } finally {
       setIsCreatingDM(false);
     }
@@ -169,7 +173,7 @@ export function NotificationItem({ item, className }: NotificationItemProps) {
 
   // Extract data if available
   const data = notification.data as NotificationData | undefined;
-  const avatarName = actor?.username ?? data?.username ?? 'User';
+  const avatarName = actor ? getUserDisplayName(actor) : data?.username ?? 'User';
   const showMessageButton = MESSAGEABLE_TYPES.has(notification.type);
   const showRequestActions = notification.type === 'REQUEST';
   const isRequestHandled = handledRequestAction !== null;
@@ -189,7 +193,12 @@ export function NotificationItem({ item, className }: NotificationItemProps) {
         {!notification.read && (
           <span className="bg-primary absolute top-1/2 -left-2 size-2 -translate-y-1/2 rounded-full" />
         )}
-        <UserAvatar className="size-10" tokenIdentifier={actor?.tokenIdentifier ?? ''} username={avatarName} />
+        <UserAvatar
+          className="size-10"
+          profileUrl={actor?.profileUrl}
+          tokenIdentifier={actor?.tokenIdentifier ?? ''}
+          username={avatarName}
+        />
       </div>
 
       {/* Content */}

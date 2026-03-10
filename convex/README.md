@@ -137,3 +137,9 @@ curl -X POST https://[deployment].convex.cloud/api/admin/seed-clubs
 
 - Initial deployment: seed 11 clubs once during setup
 - Updating clubs: re-run if the `CLUBS` constant in `convex/clubs.ts` is modified
+
+NOTE: The simplest way to run this seed is:
+
+```bash
+pnpm exec convex run clubs:syncClubs '{}'
+```

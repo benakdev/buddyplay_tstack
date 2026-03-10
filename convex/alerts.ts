@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { sportTypeSchema } from './lib/validation/sharedSchemas';
 import { zMutation, zQuery, zid } from './lib/zodHelpers';
 import { alertFiltersSchema, alertSchema } from './lib/zodSchemas';
-import { requireUser } from './users';
+import { getCurrentAuthenticatedUser, requireUser } from './users';
 
 /**
  * Create or update an alert for the current user.
@@ -79,16 +79,7 @@ export const getMyAlerts = zQuery({
   args: {},
   returns: z.array(alertSchema),
   handler: async ctx => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return [];
-    }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_token', q => q.eq('tokenIdentifier', identity.tokenIdentifier))
-      .unique();
-
+    const user = await getCurrentAuthenticatedUser(ctx);
     if (!user) {
       return [];
     }

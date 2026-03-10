@@ -19,6 +19,7 @@ import { api } from '@/convex/_generated/api';
 import type { Doc } from '@/convex/_generated/dataModel';
 import { genderSchema, handSchema, usernameSchema } from '@/convex/lib/validation/sharedSchemas';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { syncClerkIdentityToConvex } from '@/lib/clerk-profile-sync';
 import { cn } from '@/lib/utils';
 
 import AvatarUpload from './AvatarUpload';
@@ -59,6 +60,7 @@ function ProfileSettingsFormContent({ user, onClose, isMobile }: ProfileSettings
   const { user: clerkUser } = useUser();
   const [avatarFile, setAvatarFile] = React.useState<File | null>(null);
   const updateUser = useMutation(api.users.updateUser);
+  const syncClerkProfile = useMutation(api.users.syncClerkProfile);
 
   const form = useForm({
     defaultValues: {
@@ -91,7 +93,11 @@ function ProfileSettingsFormContent({ user, onClose, isMobile }: ProfileSettings
 
       try {
         if (avatarFile && clerkUser) {
-          await clerkUser.setProfileImage({ file: avatarFile });
+          await syncClerkIdentityToConvex({
+            clerkUser,
+            syncClerkProfile,
+            avatarFile
+          });
         }
 
         await updateUser(payload);

@@ -29,6 +29,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { UserAvatar } from '@/components/user-avatar';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
+import { getUserDisplayName } from '@/lib/user-display';
 import { cn } from '@/lib/utils';
 
 export const Route = createFileRoute('/_app/inbox')({
@@ -41,6 +42,22 @@ export const Route = createFileRoute('/_app/inbox')({
 function extractClerkUserId(tokenIdentifier?: string): string | null {
   if (!tokenIdentifier) return null;
   return tokenIdentifier.split('|').pop() ?? null;
+}
+
+function isOtherParticipant(
+  participantTokenIdentifier: string,
+  clerkUserId?: string,
+  currentUserTokenIdentifier?: string
+) {
+  if (clerkUserId) {
+    return extractClerkUserId(participantTokenIdentifier) !== clerkUserId;
+  }
+
+  if (currentUserTokenIdentifier) {
+    return participantTokenIdentifier !== currentUserTokenIdentifier;
+  }
+
+  return true;
 }
 
 function InboxPage() {
@@ -80,17 +97,19 @@ function InboxPage() {
       const conv = item.conversation;
       const participants = item.participants;
       const dmOtherParticipant =
-        conv.type === 'DM' && clerkUser?.id
-          ? participants.find(participant => extractClerkUserId(participant.tokenIdentifier) !== clerkUser.id)
+        conv.type === 'DM'
+          ? participants.find(participant =>
+              isOtherParticipant(participant.tokenIdentifier, clerkUser?.id, currentUser?.tokenIdentifier)
+            )
           : undefined;
 
       const displayName =
         conv.type === 'DM'
-          ? (dmOtherParticipant?.username ?? 'Conversation')
+          ? (dmOtherParticipant ? getUserDisplayName(dmOtherParticipant) : 'Conversation')
           : conv.type === 'ACTIVITY'
             ? (conv.name ?? 'Group Chat')
             : participants.length > 0
-              ? participants.map(p => p.username).join(', ')
+              ? participants.map(p => getUserDisplayName(p)).join(', ')
               : 'Conversation';
 
       const dmTokenIdentifier = conv.type === 'DM' ? dmOtherParticipant?.tokenIdentifier : undefined;
@@ -98,6 +117,7 @@ function InboxPage() {
       return {
         id: conv._id,
         name: displayName,
+        avatarUrl: dmOtherParticipant?.profileUrl,
         tokenIdentifier: dmTokenIdentifier,
         lastMessage: conv.lastMessagePreview ?? undefined,
         lastMessageAt: conv.lastMessageAt ?? undefined,
@@ -105,7 +125,7 @@ function InboxPage() {
         initials: displayName.charAt(0).toUpperCase()
       };
     });
-  }, [clerkUser, conversationsData]);
+  }, [clerkUser, conversationsData, currentUser]);
 
   const handleSelectConversation = (selectedConversationId: string) => {
     void navigate({
@@ -115,7 +135,7 @@ function InboxPage() {
   };
 
   const handleBack = () => {
-    void navigate({ to: '/inbox' });
+    void navigate({ to: '/inbox', search: { conversationId: undefined } });
   };
 
   const handleOpenMessageAlert = async (conversationId: string, notificationId: string) => {
@@ -140,36 +160,38 @@ function InboxPage() {
     if (!conversationDetail) {
       return {
         name: '',
-        tokenIdentifier: undefined as string | undefined
+        tokenIdentifier: undefined as string | undefined,
+        profileUrl: undefined as string | undefined
       };
     }
 
     const conv = conversationDetail.conversation;
     if (conv.type === 'DM') {
-      const other = clerkUser?.id
-        ? conversationDetail.participants.find(
-            participant => extractClerkUserId(participant.tokenIdentifier) !== clerkUser.id
-          )
-        : undefined;
+      const other = conversationDetail.participants.find(participant =>
+        isOtherParticipant(participant.tokenIdentifier, clerkUser?.id, currentUser?.tokenIdentifier)
+      );
       return {
-        name: other?.username ?? 'Chat',
-        tokenIdentifier: other?.tokenIdentifier
+        name: other ? getUserDisplayName(other) : 'Chat',
+        tokenIdentifier: other?.tokenIdentifier,
+        profileUrl: other?.profileUrl
       };
     }
 
     if (conv.type === 'ACTIVITY') {
       return {
         name: conv.name ?? 'Group Chat',
-        tokenIdentifier: undefined
+        tokenIdentifier: undefined,
+        profileUrl: undefined
       };
     }
 
     const others = conversationDetail.participants;
     return {
-      name: others.length > 0 ? others.map(p => p.username).join(', ') : 'Chat',
-      tokenIdentifier: undefined
+      name: others.length > 0 ? others.map(p => getUserDisplayName(p)).join(', ') : 'Chat',
+      tokenIdentifier: undefined,
+      profileUrl: undefined
     };
-  }, [clerkUser, conversationDetail]);
+  }, [clerkUser, conversationDetail, currentUser]);
 
   const headerName = headerInfo.name;
   const headerInitials = headerName.charAt(0).toUpperCase();
@@ -233,6 +255,7 @@ function InboxPage() {
                 {headerInfo.tokenIdentifier ? (
                   <UserAvatar
                     className="size-8 rounded-full"
+                    profileUrl={headerInfo.profileUrl}
                     tokenIdentifier={headerInfo.tokenIdentifier}
                     username={headerName || 'User'}
                     fallbackClassName="text-xs"
@@ -274,14 +297,17 @@ function InboxPage() {
                       <ChatEvent key={item.message._id} isMe={!!isMe} className="hover:bg-accent/50 rounded py-1">
                         <ChatEventAddon>
                           <ChatEventAvatar
+                            src={item.sender.profileUrl}
                             tokenIdentifier={item.sender.tokenIdentifier}
-                            username={item.sender.username}
+                            username={getUserDisplayName(item.sender)}
                             fallback={item.sender.username.charAt(0).toUpperCase()}
                           />
                         </ChatEventAddon>
                         <ChatEventBody>
                           <ChatEventTitle className={cn(isMe && 'justify-end gap-2')}>
-                            <span className="text-muted-foreground text-xs font-normal">{item.sender.username}</span>
+                            <span className="text-muted-foreground text-xs font-normal">
+                              {getUserDisplayName(item.sender)}
+                            </span>
                             <ChatEventTime
                               timestamp={item.message._creationTime}
                               format="time"

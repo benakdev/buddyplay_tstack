@@ -98,9 +98,6 @@ importers:
       react-dom:
         specifier: ^19.2.0
         version: 19.2.4(react@19.2.4)
-      rulesync:
-        specifier: ^7.11.0
-        version: 7.11.0(valibot@1.2.0(typescript@5.9.3))
       shadcn:
         specifier: ^3.7.0
         version: 3.8.5(@types/node@22.19.13)(typescript@5.9.3)
@@ -174,6 +171,9 @@ importers:
       prettier-plugin-tailwindcss:
         specifier: ^0.7.2
         version: 0.7.2(@trivago/prettier-plugin-sort-imports@6.0.2(prettier@3.8.1))(prettier@3.8.1)
+      rulesync:
+        specifier: ^7.18.0
+        version: 7.18.0(valibot@1.2.0(typescript@5.9.3))
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
@@ -3413,8 +3413,8 @@ packages:
     resolution: {integrity: sha512-w+5mJ3GuFL+NjVtJlvydShqE1eN3h3PbI7/5LAsYJP/2qtuMXjfL2LpHSRqo4b4eSF5K/DH1JXKUAHSB2UW50g==}
     engines: {node: '>= 0.4'}
 
-  es-toolkit@1.44.0:
-    resolution: {integrity: sha512-6penXeZalaV88MM3cGkFZZfOoLGWshWWfdy0tWw/RlVVyhvMaWSBTOvXNeiW3e5FwdS5ePW0LGEu17zT139ktg==}
+  es-toolkit@1.45.1:
+    resolution: {integrity: sha512-/jhoOj/Fx+A+IIyDNOvO3TItGmlMKhtX8ISAHKE90c4b/k1tqaqEZ+uUqfpU8DMnW5cgNJv606zS55jGvza0Xw==}
 
   esbuild@0.27.0:
     resolution: {integrity: sha512-jd0f4NHbD6cALCyGElNpGAOtWxSq46l9X/sWB0Nzd5er4Kz2YTm+Vl0qKFT9KUJvD8+fiO8AvoHhFvEatfVixA==}
@@ -5028,8 +5028,8 @@ packages:
     resolution: {integrity: sha512-nLTrUKm2UyiL7rlhapu/Zl45FwNgkZGaCpZbIHajDYgwlJCOzLSk+cIPAnsEqV955GjILJnKbdQC1nVPz+gAYQ==}
     engines: {node: '>= 18'}
 
-  rulesync@7.11.0:
-    resolution: {integrity: sha512-TT2Sh7okCpIxA7bvcjA76pyk25CJ6UTyfobLE9lvU+9uvzXIBLlQAs7SFvntphPINiOj6jN9HQ9ODVZtCwMXhA==}
+  rulesync@7.18.0:
+    resolution: {integrity: sha512-G+BVONrnhw4l9lwmzdH5D6XTasO8ytApNVUlAChXHSKZtwVNaTMyogNcXJKHH0zizoie4z8P3qaMzX1pXEdTBA==}
     engines: {node: '>=22.0.0'}
     hasBin: true
 
@@ -9377,7 +9377,7 @@ snapshots:
       is-date-object: 1.1.0
       is-symbol: 1.1.1
 
-  es-toolkit@1.44.0: {}
+  es-toolkit@1.45.1: {}
 
   esbuild@0.27.0:
     optionalDependencies:
@@ -11166,7 +11166,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  rulesync@7.11.0(valibot@1.2.0(typescript@5.9.3)):
+  rulesync@7.18.0(valibot@1.2.0(typescript@5.9.3)):
     dependencies:
       '@modelcontextprotocol/sdk': 1.27.1(zod@4.3.6)
       '@octokit/request-error': 7.1.0
@@ -11176,7 +11176,7 @@ snapshots:
       commander: 14.0.3
       consola: 3.4.2
       effect: 3.19.19
-      es-toolkit: 1.44.0
+      es-toolkit: 1.45.1
       fastmcp: 3.33.0(@valibot/to-json-schema@1.5.0(valibot@1.2.0(typescript@5.9.3)))(effect@3.19.19)(sury@10.0.4)
       globby: 16.1.1
       gray-matter: 4.0.3

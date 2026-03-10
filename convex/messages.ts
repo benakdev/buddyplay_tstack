@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { incrementUnreadCount } from './lib/notifications';
 import { zMutation, zQuery, zid } from './lib/zodHelpers';
 import { messageSchema } from './lib/zodSchemas';
-import { requireUser } from './users';
+import { getCurrentAuthenticatedUser, requireUser } from './users';
 
 /**
  * Send a message in a conversation.
@@ -94,21 +94,15 @@ export const getMessages = zQuery({
       sender: z.object({
         _id: zid('users'),
         username: z.string(),
-        tokenIdentifier: z.string()
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
+        tokenIdentifier: z.string(),
+        profileUrl: z.string().optional()
       })
     })
   ),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return [];
-    }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_token', q => q.eq('tokenIdentifier', identity.tokenIdentifier))
-      .unique();
-
+    const user = await getCurrentAuthenticatedUser(ctx);
     if (!user) {
       return [];
     }
@@ -145,7 +139,10 @@ export const getMessages = zQuery({
       sender: {
         _id: (typeof messages)[number]['senderId'];
         username: string;
+        firstName?: string;
+        lastName?: string;
         tokenIdentifier: string;
+        profileUrl?: string;
       };
     }> = [];
 
@@ -157,12 +154,18 @@ export const getMessages = zQuery({
           ? {
               _id: sender._id,
               username: sender.username,
-              tokenIdentifier: sender.tokenIdentifier
+              firstName: sender.firstName,
+              lastName: sender.lastName,
+              tokenIdentifier: sender.tokenIdentifier,
+              profileUrl: sender.profileUrl
             }
           : {
               _id: message.senderId,
               username: 'Unknown User',
-              tokenIdentifier: ''
+              firstName: undefined,
+              lastName: undefined,
+              tokenIdentifier: '',
+              profileUrl: undefined
             }
       });
     }
@@ -180,16 +183,7 @@ export const getRecentMessages = zQuery({
   },
   returns: z.array(messageSchema),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return [];
-    }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_token', q => q.eq('tokenIdentifier', identity.tokenIdentifier))
-      .unique();
-
+    const user = await getCurrentAuthenticatedUser(ctx);
     if (!user) {
       return [];
     }

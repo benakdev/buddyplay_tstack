@@ -1,10 +1,12 @@
 ---
-root: true
-targets: ["*"]
-description: "Project overview and general development guidelines"
-globs: ["**/*"]
+root: false
+targets:
+  - '*'
+globs:
+  - '**/*'
+antigravity:
+  trigger: always_on
 ---
-
 # Project Overview
 
 ## General Guidelines
@@ -24,7 +26,7 @@ globs: ["**/*"]
 
 ## Architecture Principles
 
-- Organize code by feature, not by file type
+- Organize code by the instructions in the README file
 - Keep related files close together
 - Use dependency injection for better testability
 - Implement proper error handling

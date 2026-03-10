@@ -1,7 +1,12 @@
 ---
-description: 'Review a pull request'
-targets: ["*"]
+targets:
+  - antigravity
+description: Review a pull request
+antigravity:
+  trigger: /review-pr
+  turbo: true
 ---
+# Workflow: /review-pr
 
 target_pr = $ARGUMENTS
 
@@ -15,3 +20,5 @@ Execute the following in parallel:
 4. Check for potential bugs or security issues
 
 Then provide a summary of findings and suggestions for improvement.
+
+// turbo

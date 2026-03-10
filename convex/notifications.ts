@@ -5,7 +5,7 @@ import { decrementUnreadCount, incrementUnreadCount, resetUnreadCount } from './
 import { notificationTypeSchema } from './lib/validation/sharedSchemas';
 import { zMutation, zQuery, zid } from './lib/zodHelpers';
 import { notificationSchema, paginationOptsSchema } from './lib/zodSchemas';
-import { requireUser } from './users';
+import { getCurrentAuthenticatedUser, requireUser } from './users';
 
 type NotificationType = z.infer<typeof notificationTypeSchema>;
 
@@ -19,7 +19,10 @@ const notificationFilterArgs = {
 const notificationActorSchema = z.object({
   _id: zid('users'),
   username: z.string(),
-  tokenIdentifier: z.string()
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  tokenIdentifier: z.string(),
+  profileUrl: z.string().optional()
 });
 
 const enrichedNotificationSchema = z.object({
@@ -98,16 +101,7 @@ export const getMyNotifications = zQuery({
   args: notificationFilterArgs,
   returns: z.array(notificationSchema),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return [];
-    }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_token', q => q.eq('tokenIdentifier', identity.tokenIdentifier))
-      .unique();
-
+    const user = await getCurrentAuthenticatedUser(ctx);
     if (!user) {
       return [];
     }
@@ -139,16 +133,7 @@ export const getMyNotificationsEnriched = zQuery({
   args: notificationFilterArgs,
   returns: z.array(enrichedNotificationSchema),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return [];
-    }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_token', q => q.eq('tokenIdentifier', identity.tokenIdentifier))
-      .unique();
-
+    const user = await getCurrentAuthenticatedUser(ctx);
     if (!user) {
       return [];
     }
@@ -160,14 +145,17 @@ export const getMyNotificationsEnriched = zQuery({
           .query('notifications')
           .withIndex('by_user_read', q => q.eq('userId', user._id).eq('read', false))
           .order('desc')
-        .collect()
+          .collect()
       : await ctx.db
           .query('notifications')
           .withIndex('by_user', q => q.eq('userId', user._id))
           .order('desc')
-        .collect();
+          .collect();
 
-    const notifications = filterNotificationsByType(rawNotifications, args.includeTypes, args.excludeTypes).slice(0, limit);
+    const notifications = filterNotificationsByType(rawNotifications, args.includeTypes, args.excludeTypes).slice(
+      0,
+      limit
+    );
 
     const actorByNotificationId = new Map<string, Id<'users'>>();
     const requestFallbackIds = new Set<Id<'requests'>>();
@@ -233,7 +221,10 @@ export const getMyNotificationsEnriched = zQuery({
           ? {
               _id: actorUser._id,
               username: actorUser.username,
-              tokenIdentifier: actorUser.tokenIdentifier
+              firstName: actorUser.firstName,
+              lastName: actorUser.lastName,
+              tokenIdentifier: actorUser.tokenIdentifier,
+              profileUrl: actorUser.profileUrl
             }
           : null
       };
@@ -255,16 +246,7 @@ export const getMyNotificationsPaginated = zQuery({
     continueCursor: z.string().nullable()
   }),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return { page: [], isDone: true, continueCursor: null };
-    }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_token', q => q.eq('tokenIdentifier', identity.tokenIdentifier))
-      .unique();
-
+    const user = await getCurrentAuthenticatedUser(ctx);
     if (!user) {
       return { page: [], isDone: true, continueCursor: null };
     }
@@ -292,16 +274,7 @@ export const getUnreadCount = zQuery({
   args: {},
   returns: z.number(),
   handler: async ctx => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return 0;
-    }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_token', q => q.eq('tokenIdentifier', identity.tokenIdentifier))
-      .unique();
-
+    const user = await getCurrentAuthenticatedUser(ctx);
     if (!user) {
       return 0;
     }
