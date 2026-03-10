@@ -1,9 +1,48 @@
 import { z } from 'zod';
 
+import type { Id } from './_generated/dataModel';
+import type { QueryCtx } from './_generated/server';
+import { deleteConversationCascade, syncActivityConversation } from './lib/activityChats';
 import { conversationTypeSchema } from './lib/validation/sharedSchemas';
 import { zMutation, zQuery, zid } from './lib/zodHelpers';
 import { conversationSchema } from './lib/zodSchemas';
 import { getCurrentAuthenticatedUser, requireUser } from './users';
+
+async function getConversationParticipantsWithUsers(ctx: QueryCtx, conversationId: Id<'conversations'>) {
+  const allParticipants = await ctx.db
+    .query('conversationParticipants')
+    .withIndex('by_conversation_id', q => q.eq('conversationId', conversationId))
+    .collect();
+
+  const participantIds = Array.from(new Set(allParticipants.map(p => p.userId)));
+  const participantUsersDocs = await Promise.all(participantIds.map(id => ctx.db.get('users', id)));
+  const participantById = new Map(participantUsersDocs.filter(Boolean).map(p => [p!._id, p!]));
+
+  const participantUsers: Array<{
+    _id: Id<'users'>;
+    username: string;
+    firstName?: string;
+    lastName?: string;
+    tokenIdentifier: string;
+    profileUrl?: string;
+  }> = [];
+
+  for (const p of allParticipants) {
+    const participantUser = participantById.get(p.userId);
+    if (participantUser) {
+      participantUsers.push({
+        _id: participantUser._id,
+        username: participantUser.username,
+        firstName: participantUser.firstName,
+        lastName: participantUser.lastName,
+        tokenIdentifier: participantUser.tokenIdentifier,
+        profileUrl: participantUser.profileUrl
+      });
+    }
+  }
+
+  return participantUsers;
+}
 
 /**
  * Create a new conversation.
@@ -147,38 +186,18 @@ export const createActivityConversation = zMutation({
       throw new Error('Activity not found');
     }
 
-    // Check if conversation already exists for this activity
-    const existing = await ctx.db
-      .query('conversations')
-      .withIndex('by_activity', q => q.eq('activityId', args.activityId))
-      .unique();
-
-    if (existing) {
-      return existing._id;
-    }
-
-    // Create conversation
-    const conversationId = await ctx.db.insert('conversations', {
-      type: 'ACTIVITY',
-      name: args.name ?? activity.title,
-      activityId: args.activityId,
-      lastMessageAt: undefined,
-      lastMessagePreview: undefined
+    const conversationId = await syncActivityConversation(ctx, {
+      activityId: args.activityId
     });
 
-    // Add all current participants
-    const participants = await ctx.db
-      .query('activityParticipants')
-      .withIndex('by_activity', q => q.eq('activityId', args.activityId))
-      .collect();
+    if (!conversationId) {
+      throw new Error('Activity chat requires at least 2 joined players');
+    }
 
-    for (const p of participants) {
-      if (p.status === 'JOINED') {
-        await ctx.db.insert('conversationParticipants', {
-          conversationId,
-          userId: p.userId
-        });
-      }
+    if (args.name) {
+      await ctx.db.patch('conversations', conversationId, {
+        name: args.name
+      });
     }
 
     return conversationId;
@@ -213,13 +232,11 @@ export const getMyConversations = zQuery({
       return [];
     }
 
-    const limit = args.limit ?? 50;
-
     // Get user's conversation participations
     const participations = await ctx.db
       .query('conversationParticipants')
       .withIndex('by_user_id', q => q.eq('userId', user._id))
-      .take(limit);
+      .collect();
 
     const results: Array<{
       conversation: Awaited<ReturnType<typeof ctx.db.get<'conversations'>>> & {};
@@ -234,40 +251,11 @@ export const getMyConversations = zQuery({
     }> = [];
 
     for (const participation of participations) {
+      if (participation.hiddenAt) continue;
+
       const conversation = await ctx.db.get('conversations', participation.conversationId);
       if (!conversation) continue;
-
-      // Get other participants
-      const allParticipants = await ctx.db
-        .query('conversationParticipants')
-        .withIndex('by_conversation_id', q => q.eq('conversationId', conversation._id))
-        .collect();
-
-      const participantIds = Array.from(new Set(allParticipants.map(p => p.userId)));
-      const participantUsersDocs = await Promise.all(participantIds.map(id => ctx.db.get('users', id)));
-      const participantById = new Map(participantUsersDocs.filter(Boolean).map(p => [p!._id, p!]));
-
-      const participantUsers: Array<{
-        _id: typeof user._id;
-        username: string;
-        firstName?: string;
-        lastName?: string;
-        tokenIdentifier: string;
-        profileUrl?: string;
-      }> = [];
-      for (const p of allParticipants) {
-        const participantUser = participantById.get(p.userId);
-        if (participantUser) {
-          participantUsers.push({
-            _id: participantUser._id,
-            username: participantUser.username,
-            firstName: participantUser.firstName,
-            lastName: participantUser.lastName,
-            tokenIdentifier: participantUser.tokenIdentifier,
-            profileUrl: participantUser.profileUrl
-          });
-        }
-      }
+      const participantUsers = await getConversationParticipantsWithUsers(ctx, conversation._id);
 
       results.push({
         conversation,
@@ -282,7 +270,7 @@ export const getMyConversations = zQuery({
       return bTime - aTime;
     });
 
-    return results;
+    return results.slice(0, args.limit ?? 50);
   }
 });
 
@@ -331,37 +319,7 @@ export const getConversation = zQuery({
       return null;
     }
 
-    // Get all participants
-    const allParticipants = await ctx.db
-      .query('conversationParticipants')
-      .withIndex('by_conversation_id', q => q.eq('conversationId', args.conversationId))
-      .collect();
-
-    const participantIds = Array.from(new Set(allParticipants.map(p => p.userId)));
-    const participantUsersDocs = await Promise.all(participantIds.map(id => ctx.db.get('users', id)));
-    const participantById = new Map(participantUsersDocs.filter(Boolean).map(p => [p!._id, p!]));
-
-    const participantUsers: Array<{
-      _id: typeof user._id;
-      username: string;
-      firstName?: string;
-      lastName?: string;
-      tokenIdentifier: string;
-      profileUrl?: string;
-    }> = [];
-    for (const p of allParticipants) {
-      const participantUser = participantById.get(p.userId);
-      if (participantUser) {
-        participantUsers.push({
-          _id: participantUser._id,
-          username: participantUser.username,
-          firstName: participantUser.firstName,
-          lastName: participantUser.lastName,
-          tokenIdentifier: participantUser.tokenIdentifier,
-          profileUrl: participantUser.profileUrl
-        });
-      }
-    }
+    const participantUsers = await getConversationParticipantsWithUsers(ctx, args.conversationId);
 
     return {
       conversation,
@@ -409,6 +367,45 @@ export const addParticipant = zMutation({
 });
 
 /**
+ * Hide a DM conversation from the current user's inbox.
+ */
+export const hideConversation = zMutation({
+  args: {
+    conversationId: zid('conversations')
+  },
+  returns: z.null(),
+  handler: async (ctx, args) => {
+    const userId = await requireUser(ctx);
+
+    const conversation = await ctx.db.get('conversations', args.conversationId);
+    if (!conversation) {
+      throw new Error('Conversation not found');
+    }
+
+    if (conversation.type !== 'DM') {
+      throw new Error('Only direct messages can be hidden');
+    }
+
+    const participation = await ctx.db
+      .query('conversationParticipants')
+      .withIndex('by_conversation_id_and_user_id', q =>
+        q.eq('conversationId', args.conversationId).eq('userId', userId)
+      )
+      .unique();
+
+    if (!participation) {
+      throw new Error('Not a participant of this conversation');
+    }
+
+    await ctx.db.patch('conversationParticipants', participation._id, {
+      hiddenAt: Date.now()
+    });
+
+    return null;
+  }
+});
+
+/**
  * Leave a conversation.
  */
 export const leaveConversation = zMutation({
@@ -418,6 +415,15 @@ export const leaveConversation = zMutation({
   returns: z.null(),
   handler: async (ctx, args) => {
     const userId = await requireUser(ctx);
+    const conversation = await ctx.db.get('conversations', args.conversationId);
+
+    if (!conversation) {
+      throw new Error('Conversation not found');
+    }
+
+    if (conversation.type === 'DM') {
+      throw new Error('Direct messages cannot be left. Hide the chat instead.');
+    }
 
     const participation = await ctx.db
       .query('conversationParticipants')
@@ -439,17 +445,7 @@ export const leaveConversation = zMutation({
       .first();
 
     if (!remaining) {
-      // Delete the conversation and its messages
-      const messages = await ctx.db
-        .query('messages')
-        .withIndex('by_conversation_id', q => q.eq('conversationId', args.conversationId))
-        .collect();
-
-      for (const message of messages) {
-        await ctx.db.delete('messages', message._id);
-      }
-
-      await ctx.db.delete('conversations', args.conversationId);
+      await deleteConversationCascade(ctx, args.conversationId);
     }
 
     return null;

@@ -9,7 +9,7 @@ import { api } from '@/convex/_generated/api';
 import type { ProfileData } from '@/lib/schema/types';
 import { getUserDisplayName } from '@/lib/user-display';
 
-export const Route = createFileRoute('/u/$username')({
+export const Route = createFileRoute('/_app/u/$username')({
   component: PublicUserProfilePage
 });
 
@@ -21,7 +21,7 @@ function PublicUserProfilePage() {
 
   if (!isUserLoading && !convexUser) {
     return (
-      <div className="container max-w-3xl py-16">
+      <div className="py-16">
         <Empty>
           <EmptyHeader>
             <EmptyTitle>Profile not found</EmptyTitle>
@@ -37,7 +37,7 @@ function PublicUserProfilePage() {
 
   if (!convexUser) {
     return (
-      <div className="container max-w-5xl space-y-12 py-12">
+      <div className="space-y-12 py-12">
         <ProfileHero user={null} isUserLoading={true} />
       </div>
     );
@@ -53,7 +53,7 @@ function PublicUserProfilePage() {
   };
 
   return (
-    <div className="container max-w-5xl space-y-12 py-12">
+    <div className="space-y-12 py-12">
       <ProfileHero user={convexUser} isUserLoading={false} profileData={profileData} />
       <SportPassportGrid userId={convexUser._id} />
     </div>

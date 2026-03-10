@@ -3,11 +3,13 @@
 import * as React from 'react';
 
 import { useMutation, useQuery } from 'convex/react';
-import { Check, Clock3, X } from 'lucide-react';
+import { Check, Clock3, Sparkles, X } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { CreateGameSheet } from '@/components/dashboard/CreateGameSheet';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
 
@@ -57,7 +59,22 @@ export function HostRequestsPanel() {
         {pendingRequests === undefined ? (
           <div className="text-muted-foreground text-sm">Loading requests…</div>
         ) : pendingRequests.length === 0 ? (
-          <div className="text-muted-foreground text-sm">No pending requests right now.</div>
+          <div className="app-shell-panel rounded-2xl bg-background/45 p-3 sm:p-4">
+            <Empty className="gap-3 rounded-2xl border border-dashed border-border/60 bg-background/20 px-6 py-8">
+              <EmptyHeader className="max-w-md">
+                <EmptyMedia variant="icon" className="bg-primary/12 text-primary">
+                  <Sparkles className="size-5" />
+                </EmptyMedia>
+                <EmptyTitle>No pending requests yet</EmptyTitle>
+                <EmptyDescription>
+                  Player join requests will show up here after you create a game and start getting responses.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent className="max-w-none">
+                <CreateGameSheet />
+              </EmptyContent>
+            </Empty>
+          </div>
         ) : (
           pendingRequests.map(item => {
             const isPending = pendingId === item.request._id;

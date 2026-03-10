@@ -16,6 +16,11 @@ export const sendMessage = zMutation({
   returns: zid('messages'),
   handler: async (ctx, args) => {
     const userId = await requireUser(ctx);
+    const conversation = await ctx.db.get('conversations', args.conversationId);
+
+    if (!conversation) {
+      throw new Error('Conversation not found');
+    }
 
     // Check if user is a participant
     const participation = await ctx.db
@@ -27,6 +32,12 @@ export const sendMessage = zMutation({
 
     if (!participation) {
       throw new Error('Not a participant of this conversation');
+    }
+
+    if (participation.hiddenAt) {
+      await ctx.db.patch('conversationParticipants', participation._id, {
+        hiddenAt: undefined
+      });
     }
 
     const now = Date.now();
@@ -51,6 +62,18 @@ export const sendMessage = zMutation({
       .query('conversationParticipants')
       .withIndex('by_conversation_id', q => q.eq('conversationId', args.conversationId))
       .collect();
+
+    if (conversation.type === 'DM') {
+      await Promise.all(
+        allParticipants
+          .filter(p => p.hiddenAt)
+          .map(p =>
+            ctx.db.patch('conversationParticipants', p._id, {
+              hiddenAt: undefined
+            })
+          )
+      );
+    }
 
     const sender = await ctx.db.get('users', userId);
     const senderName = sender?.username ?? 'Someone';

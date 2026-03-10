@@ -38,6 +38,7 @@ interface NotificationData {
   userId?: Id<'users'>;
   requestId?: Id<'requests'>;
   activityId?: Id<'activities'>;
+  conversationId?: Id<'conversations'>;
 }
 
 function getDirectActorUserId(data: NotificationData): Id<'users'> | undefined {

@@ -12,7 +12,8 @@ export type MatchingPlayer = {
     _id: Id<'users'>;
     username: string;
   };
-  score: number;
+  sameClub: boolean;
+  matchPercentage: number | null;
 };
 
 export type ActivityWithCreator = {
