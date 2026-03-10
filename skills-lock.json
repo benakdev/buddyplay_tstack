@@ -6,6 +6,11 @@
       "sourceType": "github",
       "computedHash": "4f2f3fd8ed9a9c9e1800c22edc655c9415bd57939dbe585139db062ef400f876"
     },
+    "audit-website": {
+      "source": "squirrelscan/skills",
+      "sourceType": "github",
+      "computedHash": "2c060290f90340e8bb6009502ec936b8ebb3ff889332a43e24bf210528ebba9f"
+    },
     "capacitor-app-store": {
       "source": "cap-go/capacitor-skills",
       "sourceType": "github",
@@ -30,6 +35,11 @@
       "source": "deckardger/tanstack-agent-skills",
       "sourceType": "github",
       "computedHash": "50c1b6d9b35b05927fa0c81962d560634385c9567b7b1d66396b171965b33105"
+    },
+    "ui-ux-pro-max": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "computedHash": "e688fcd4c5693e14ebd00d48e982dbd2be060fbea89f5f60531e79c704a1bc28"
     }
   }
 }
