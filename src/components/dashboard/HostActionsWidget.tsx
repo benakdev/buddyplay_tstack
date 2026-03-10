@@ -8,16 +8,9 @@ import { api } from '@/convex/_generated/api';
 import { HostRequestsPanel } from './HostRequestsPanel';
 
 export function HostActionsWidget() {
-  const profiles = useQuery(api.sportProfiles.getCurrentUserProfiles, {});
   const pendingRequests = useQuery(api.requests.getPendingRequests);
 
-  // Don't render the section if user has no sport profiles OR if query is still loading
-  if (profiles !== undefined && profiles.length === 0) return null;
-
   const pendingCount = pendingRequests?.length ?? 0;
-
-  // If there are no pending requests and the query is done, show nothing
-  if (pendingRequests !== undefined && pendingCount === 0) return null;
 
   return (
     <section className="space-y-3">

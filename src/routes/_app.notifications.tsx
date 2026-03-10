@@ -64,7 +64,7 @@ function NotificationsPage() {
   };
 
   return (
-    <div className="container max-w-3xl space-y-6 px-4 py-4 sm:py-8">
+    <div className="space-y-6 py-4 sm:py-8">
       <div className="border-border/70 rounded-3xl border bg-[linear-gradient(135deg,hsl(var(--card))_0%,hsl(var(--muted)/0.45)_100%)] p-5 shadow-sm sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">

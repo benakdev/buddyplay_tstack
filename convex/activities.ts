@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { Id } from './_generated/dataModel';
 import { api } from './_generated/api';
 import { enrichActivitiesWithCreators } from './lib/helpers';
+import { syncActivityConversation } from './lib/activityChats';
 import {
   SKILL_RANGES,
   activityStatusSchema,
@@ -428,6 +429,8 @@ export const cancelActivity = zMutation({
       status: 'CANCELLED',
       updatedAt: Date.now()
     });
+
+    await syncActivityConversation(ctx, { activityId: args.activityId, actorUserId: userId });
     return null;
   }
 });
@@ -497,6 +500,7 @@ export const joinActivity = zMutation({
     }
 
     await ctx.db.patch('activities', args.activityId, updates);
+    await syncActivityConversation(ctx, { activityId: args.activityId, actorUserId: userId });
     return null;
   }
 });
@@ -561,6 +565,7 @@ export const leaveActivity = zMutation({
     }
 
     await ctx.db.patch('activities', args.activityId, updates);
+    await syncActivityConversation(ctx, { activityId: args.activityId, actorUserId: userId });
     return null;
   }
 });

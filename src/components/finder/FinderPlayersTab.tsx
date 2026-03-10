@@ -35,13 +35,17 @@ function getLevelText(profile: MatchingPlayer['profile']): string {
   return 'Level not set';
 }
 
-function ScoreBar({ score }: { score: number }) {
-  const pct = Math.min(100, Math.max(0, score));
+function ScoreBar({ percentage }: { percentage: number }) {
+  const pct = Math.min(100, Math.max(0, percentage));
   return (
     <div className="bg-muted flex h-1.5 w-16 overflow-hidden rounded-full">
       <div className="bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
     </div>
   );
+}
+
+function getRenderableMatchPercentage(matchPercentage: number | null | undefined): number | null {
+  return typeof matchPercentage === 'number' && Number.isFinite(matchPercentage) ? matchPercentage : null;
 }
 
 export function FinderPlayersTab({ search, sport }: FinderPlayersTabProps) {
@@ -197,6 +201,7 @@ export function FinderPlayersTab({ search, sport }: FinderPlayersTabProps) {
           {filtered.map(match => {
             const isMessaging = messageTargetId === match.user._id;
             const clubName = match.profile.homeClubId ? (clubById.get(match.profile.homeClubId) ?? null) : null;
+            const matchPercentage = getRenderableMatchPercentage(match.matchPercentage);
             return (
               <div
                 key={match.profile._id}
@@ -208,13 +213,17 @@ export function FinderPlayersTab({ search, sport }: FinderPlayersTabProps) {
                     <p className="text-muted-foreground text-sm">{getLevelText(match.profile)}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <Badge
-                      variant="secondary"
-                      className="bg-primary/10 text-primary border-primary/20 border font-semibold"
-                    >
-                      {Math.round(match.score)}% match
-                    </Badge>
-                    <ScoreBar score={match.score} />
+                    {matchPercentage !== null ? (
+                      <>
+                        <Badge
+                          variant="secondary"
+                          className="bg-primary/10 text-primary border-primary/20 border font-semibold"
+                        >
+                          {Math.round(matchPercentage)}% match
+                        </Badge>
+                        <ScoreBar percentage={matchPercentage} />
+                      </>
+                    ) : null}
                   </div>
                 </div>
 
@@ -229,7 +238,9 @@ export function FinderPlayersTab({ search, sport }: FinderPlayersTabProps) {
 
                 <div className="flex gap-2">
                   <Button asChild size="sm" variant="outline">
-                    <Link to={`/u/${match.user.username}`}>View Profile</Link>
+                    <Link to="/u/$username" params={{ username: match.user.username }}>
+                      View Profile
+                    </Link>
                   </Button>
                   <Button size="sm" onClick={() => handleMessage(match.user._id)} disabled={isMessaging}>
                     {isMessaging ? (

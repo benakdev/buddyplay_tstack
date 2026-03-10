@@ -17,7 +17,7 @@ function MyGamesPage() {
   const alerts = useQuery(api.alerts.getMyAlerts);
 
   return (
-    <div className="container max-w-5xl space-y-6 px-4 py-4 sm:space-y-8 sm:py-8">
+    <div className="space-y-6 py-4 sm:space-y-8 sm:py-8">
       <div className="border-border/70 rounded-3xl border bg-[linear-gradient(135deg,hsl(var(--card))_0%,hsl(var(--muted)/0.45)_100%)] p-5 shadow-sm sm:p-6">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">My Games</h1>

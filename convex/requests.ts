@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { syncActivityConversation } from './lib/activityChats';
 import { incrementUnreadCount } from './lib/notifications';
 import { requestStatusSchema, sportTypeSchema } from './lib/validation/sharedSchemas';
 import { zMutation, zQuery, zid } from './lib/zodHelpers';
@@ -407,6 +408,7 @@ export const approveRequest = zMutation({
     }
 
     await ctx.db.patch('activities', request.activityId, activityUpdates);
+    await syncActivityConversation(ctx, { activityId: request.activityId, actorUserId: request.userId });
 
     const host = await ctx.db.get('users', userId);
 

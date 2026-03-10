@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 // ── per-type config ─────────────────────────────────────────────────────────
 const TYPE_META: Record<string, { icon: React.ComponentType<{ className?: string }>; dot: string; bg: string }> = {
   MESSAGE: { icon: MessageCircle, dot: 'bg-blue-500', bg: 'bg-blue-500/10' },
+  ACTIVITY_CHAT: { icon: Users, dot: 'bg-cyan-500', bg: 'bg-cyan-500/10' },
   REQUEST: { icon: UserPlus, dot: 'bg-amber-500', bg: 'bg-amber-500/10' },
   APPROVED: { icon: Check, dot: 'bg-emerald-500', bg: 'bg-emerald-500/10' },
   REJECTED: { icon: X, dot: 'bg-destructive', bg: 'bg-destructive/10' },
@@ -38,6 +39,8 @@ interface NotifData {
   userId?: Id<'users'>;
   conversationId?: Id<'conversations'>;
 }
+
+const DIRECT_CONVERSATION_TYPES = new Set(['MESSAGE', 'ACTIVITY_CHAT']);
 
 // ── single compact carousel card ────────────────────────────────────────────
 function NotifCard({
@@ -74,12 +77,22 @@ function NotifCard({
     if (!notification.read) await markAsRead({ notificationId: notification._id });
   };
 
+  const handleCardClick = async () => {
+    await markRead();
+    if (DIRECT_CONVERSATION_TYPES.has(notification.type) && data?.conversationId) {
+      void navigate({
+        to: '/inbox',
+        search: { conversationId: String(data.conversationId) }
+      });
+    }
+  };
+
   const handleMessage = async (e: React.MouseEvent) => {
     e.stopPropagation();
     setDmLoading(true);
     try {
       await markRead();
-      if (notification.type === 'MESSAGE' && data?.conversationId) {
+      if (DIRECT_CONVERSATION_TYPES.has(notification.type) && data?.conversationId) {
         void navigate({
           to: '/inbox',
           search: { conversationId: String(data.conversationId) }
@@ -141,12 +154,15 @@ function NotifCard({
     }
   };
 
-  const showMessage = ['PLAYER_MATCH', 'MESSAGE', 'APPROVED', 'ACTIVITY_ALERT'].includes(notification.type);
+  const showMessage = ['PLAYER_MATCH', 'MESSAGE', 'APPROVED', 'ACTIVITY_ALERT', 'ACTIVITY_CHAT'].includes(
+    notification.type
+  );
   const showRequest = notification.type === 'REQUEST';
+  const actionLabel = DIRECT_CONVERSATION_TYPES.has(notification.type) ? 'Open chat' : 'Reply';
 
   return (
     <div
-      onClick={markRead}
+      onClick={() => void handleCardClick()}
       className={cn(
         'relative flex h-full w-full cursor-pointer flex-col justify-between gap-3 rounded-xl border p-4 transition-colors',
         notification.read ? 'bg-card' : cn('bg-card', meta.bg),
@@ -199,7 +215,7 @@ function NotifCard({
             disabled={dmLoading}
           >
             {dmLoading ? <Loader2 className="mr-1 size-3 animate-spin" /> : <MessageCircle className="mr-1 size-3" />}
-            Reply
+            {actionLabel}
           </Button>
         ) : null}
       </div>

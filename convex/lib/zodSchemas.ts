@@ -245,7 +245,8 @@ export const conversationSchema = conversationTableSchema.extend({
 
 export const conversationParticipantTableSchema = z.object({
   conversationId: zid('conversations'),
-  userId: zid('users')
+  userId: zid('users'),
+  hiddenAt: z.number().int().positive().optional()
 });
 
 export const conversationParticipantSchema = conversationParticipantTableSchema.extend({

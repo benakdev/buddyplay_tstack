@@ -42,6 +42,10 @@ function getLevelText(profile: MatchingPlayer['profile']): string {
   return 'Level not set';
 }
 
+function getRenderableMatchPercentage(matchPercentage: number | null | undefined): number | null {
+  return typeof matchPercentage === 'number' && Number.isFinite(matchPercentage) ? matchPercentage : null;
+}
+
 export function PlayersBucket({
   limit = 50,
   hideSearch = false,
@@ -140,7 +144,7 @@ function PlayersBucketSection({ limit, profile, search }: { limit: number; profi
 
   const clubMatches = React.useMemo(() => {
     if (!matches || !profile.homeClubId) return [];
-    return matches.filter(match => match.profile.homeClubId === profile.homeClubId);
+    return matches.filter(match => match.sameClub);
   }, [matches, profile.homeClubId]);
 
   const filteredMatches = React.useMemo(() => {
@@ -192,6 +196,7 @@ function PlayersBucketSection({ limit, profile, search }: { limit: number; profi
       ) : (
         filteredMatches.slice(0, limit).map(match => {
           const isMessaging = messageTargetId === match.user._id;
+          const matchPercentage = getRenderableMatchPercentage(match.matchPercentage);
           return (
             <div key={match.profile._id} className="bg-muted/35 space-y-3 rounded-xl border p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
@@ -199,7 +204,9 @@ function PlayersBucketSection({ limit, profile, search }: { limit: number; profi
                   <p className="font-medium">@{match.user.username}</p>
                   <p className="text-muted-foreground text-sm">{getLevelText(match.profile)}</p>
                 </div>
-                <Badge variant="secondary">Match {Math.round(match.score)}</Badge>
+                {matchPercentage !== null ? (
+                  <Badge variant="secondary">Match {Math.round(matchPercentage)}%</Badge>
+                ) : null}
               </div>
 
               <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">

@@ -42,7 +42,7 @@ function AuthenticatedLayout() {
       <AppSidebar />
       <SidebarInset className="h-dvh min-h-0 overflow-hidden">
         <header className="app-shell-panel bg-background/55 supports-backdrop-filter:bg-background/15 sticky top-0 z-20 flex h-14 shrink-0 items-center rounded-none border-x-0 border-t-0 shadow-none backdrop-blur-xl md:h-16">
-          <div className="flex w-full items-center gap-2 px-2 md:px-4">
+          <div className="app-shell-container flex items-center gap-2">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
             <DynamicBreadcrumb />
@@ -51,8 +51,10 @@ function AuthenticatedLayout() {
             </div>
           </div>
         </header>
-        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-y-contain p-4 pt-4 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)]">
-          <Outlet />
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain">
+          <div className="app-shell-container flex min-h-0 flex-1 flex-col gap-4 pt-4 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)]">
+            <Outlet />
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>

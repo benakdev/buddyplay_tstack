@@ -46,13 +46,14 @@ interface NotificationItemProps {
   className?: string;
 }
 
+const DIRECT_CONVERSATION_TYPES = new Set(['MESSAGE', 'ACTIVITY_CHAT']);
 /** Notification types that should show a "Message" button. */
-const MESSAGEABLE_TYPES = new Set(['PLAYER_MATCH', 'MESSAGE', 'APPROVED', 'ACTIVITY_ALERT']);
+const MESSAGEABLE_TYPES = new Set(['PLAYER_MATCH', 'MESSAGE', 'APPROVED', 'ACTIVITY_ALERT', 'ACTIVITY_CHAT']);
 
 /**
  * NotificationItem - A single row in the notifications feed.
- * Marks as read on click and provides a "Message" action that
- * creates or finds an existing DM and navigates to the inbox.
+ * Marks as read on click and routes either to an existing chat
+ * or to a DM with the relevant user.
  */
 export function NotificationItem({ item, className }: NotificationItemProps) {
   const { notification, actor } = item;
@@ -73,6 +74,13 @@ export function NotificationItem({ item, className }: NotificationItemProps) {
 
   const handleClick = async () => {
     await markReadIfNeeded();
+    const data = notification.data as NotificationData | undefined;
+    if (DIRECT_CONVERSATION_TYPES.has(notification.type) && data?.conversationId) {
+      void navigate({
+        to: '/inbox',
+        search: { conversationId: String(data.conversationId) }
+      });
+    }
   };
 
   const handleMessage = async (e: React.MouseEvent) => {
@@ -83,7 +91,7 @@ export function NotificationItem({ item, className }: NotificationItemProps) {
       const data = notification.data as NotificationData | undefined;
 
       // If it's a MESSAGE notification, we already have the conversationId
-      if (notification.type === 'MESSAGE' && data?.conversationId) {
+      if (DIRECT_CONVERSATION_TYPES.has(notification.type) && data?.conversationId) {
         void navigate({
           to: '/inbox',
           search: { conversationId: String(data.conversationId) }
@@ -177,6 +185,7 @@ export function NotificationItem({ item, className }: NotificationItemProps) {
   const showMessageButton = MESSAGEABLE_TYPES.has(notification.type);
   const showRequestActions = notification.type === 'REQUEST';
   const isRequestHandled = handledRequestAction !== null;
+  const actionLabel = DIRECT_CONVERSATION_TYPES.has(notification.type) ? 'Open chat' : 'Message';
 
   return (
     <div
@@ -244,7 +253,7 @@ export function NotificationItem({ item, className }: NotificationItemProps) {
             ) : (
               <MessageCircle className="mr-1.5 size-4" />
             )}
-            Message
+            {actionLabel}
           </Button>
         ) : null}
       </div>

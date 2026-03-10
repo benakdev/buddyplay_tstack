@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SsoCallbackRouteImport } from './routes/sso-callback'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as UUsernameRouteImport } from './routes/u.$username'
 import { Route as ApiUsersRouteImport } from './routes/api.users'
 import { Route as ApiHealthRouteImport } from './routes/api.health'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
@@ -22,6 +21,7 @@ import { Route as AppInboxRouteImport } from './routes/_app.inbox'
 import { Route as AppFinderRouteImport } from './routes/_app.finder'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as ApiAccountDeleteRouteImport } from './routes/api.account.delete'
+import { Route as AppUUsernameRouteImport } from './routes/_app.u.$username'
 
 const SsoCallbackRoute = SsoCallbackRouteImport.update({
   id: '/sso-callback',
@@ -35,11 +35,6 @@ const AppRoute = AppRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const UUsernameRoute = UUsernameRouteImport.update({
-  id: '/u/$username',
-  path: '/u/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiUsersRoute = ApiUsersRouteImport.update({
@@ -87,6 +82,11 @@ const ApiAccountDeleteRoute = ApiAccountDeleteRouteImport.update({
   path: '/api/account/delete',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppUUsernameRoute = AppUUsernameRouteImport.update({
+  id: '/u/$username',
+  path: '/u/$username',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -99,7 +99,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AppProfileRoute
   '/api/health': typeof ApiHealthRoute
   '/api/users': typeof ApiUsersRoute
-  '/u/$username': typeof UUsernameRoute
+  '/u/$username': typeof AppUUsernameRoute
   '/api/account/delete': typeof ApiAccountDeleteRoute
 }
 export interface FileRoutesByTo {
@@ -113,7 +113,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AppProfileRoute
   '/api/health': typeof ApiHealthRoute
   '/api/users': typeof ApiUsersRoute
-  '/u/$username': typeof UUsernameRoute
+  '/u/$username': typeof AppUUsernameRoute
   '/api/account/delete': typeof ApiAccountDeleteRoute
 }
 export interface FileRoutesById {
@@ -129,7 +129,7 @@ export interface FileRoutesById {
   '/_app/profile': typeof AppProfileRoute
   '/api/health': typeof ApiHealthRoute
   '/api/users': typeof ApiUsersRoute
-  '/u/$username': typeof UUsernameRoute
+  '/_app/u/$username': typeof AppUUsernameRoute
   '/api/account/delete': typeof ApiAccountDeleteRoute
 }
 export interface FileRouteTypes {
@@ -174,7 +174,7 @@ export interface FileRouteTypes {
     | '/_app/profile'
     | '/api/health'
     | '/api/users'
-    | '/u/$username'
+    | '/_app/u/$username'
     | '/api/account/delete'
   fileRoutesById: FileRoutesById
 }
@@ -184,7 +184,6 @@ export interface RootRouteChildren {
   SsoCallbackRoute: typeof SsoCallbackRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiUsersRoute: typeof ApiUsersRoute
-  UUsernameRoute: typeof UUsernameRoute
   ApiAccountDeleteRoute: typeof ApiAccountDeleteRoute
 }
 
@@ -209,13 +208,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/u/$username': {
-      id: '/u/$username'
-      path: '/u/$username'
-      fullPath: '/u/$username'
-      preLoaderRoute: typeof UUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/users': {
@@ -281,6 +273,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAccountDeleteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/u/$username': {
+      id: '/_app/u/$username'
+      path: '/u/$username'
+      fullPath: '/u/$username'
+      preLoaderRoute: typeof AppUUsernameRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -291,6 +290,7 @@ interface AppRouteChildren {
   AppMyGamesRoute: typeof AppMyGamesRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppProfileRoute: typeof AppProfileRoute
+  AppUUsernameRoute: typeof AppUUsernameRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -300,6 +300,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMyGamesRoute: AppMyGamesRoute,
   AppNotificationsRoute: AppNotificationsRoute,
   AppProfileRoute: AppProfileRoute,
+  AppUUsernameRoute: AppUUsernameRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -310,7 +311,6 @@ const rootRouteChildren: RootRouteChildren = {
   SsoCallbackRoute: SsoCallbackRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiUsersRoute: ApiUsersRoute,
-  UUsernameRoute: UUsernameRoute,
   ApiAccountDeleteRoute: ApiAccountDeleteRoute,
 }
 export const routeTree = rootRouteImport

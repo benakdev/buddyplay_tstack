@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 // ── per-type config ─────────────────────────────────────────────────────────
 const TYPE_META: Record<string, { icon: React.ComponentType<{ className?: string }>; dot: string; bg: string }> = {
   MESSAGE: { icon: MessageCircle, dot: 'bg-blue-500', bg: 'bg-blue-500/10' },
+  ACTIVITY_CHAT: { icon: Users, dot: 'bg-cyan-500', bg: 'bg-cyan-500/10' },
   REQUEST: { icon: UserPlus, dot: 'bg-amber-500', bg: 'bg-amber-500/10' },
   APPROVED: { icon: Check, dot: 'bg-emerald-500', bg: 'bg-emerald-500/10' },
   REJECTED: { icon: X, dot: 'bg-destructive', bg: 'bg-destructive/10' },
@@ -60,7 +61,7 @@ function DropdownNotifRow({
       await markAsRead({ notificationId: notification._id });
     }
     const data = notification.data as NotifData | undefined;
-    if (notification.type === 'MESSAGE' && data?.conversationId) {
+    if ((notification.type === 'MESSAGE' || notification.type === 'ACTIVITY_CHAT') && data?.conversationId) {
       void navigate({ to: '/inbox', search: { conversationId: String(data.conversationId) } });
     }
     onClose();

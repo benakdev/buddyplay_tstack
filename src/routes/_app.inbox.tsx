@@ -3,7 +3,8 @@ import * as React from 'react';
 import { useUser } from '@clerk/tanstack-react-start';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useMutation, useQuery } from 'convex/react';
-import { ArrowLeft, MessageCircle, Send } from 'lucide-react';
+import { ArrowLeft, ArrowUp, EyeOff, MessageCircle, MoreHorizontal } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Chat as ChatRoot } from '@/components/chat/chat';
 import {
@@ -23,7 +24,13 @@ import {
 } from '@/components/chat/chat-header';
 import { ChatList, type ChatListConversation } from '@/components/chat/chat-list';
 import { ChatMessages } from '@/components/chat/chat-messages';
-import { ChatToolbar, ChatToolbarAddon, ChatToolbarButton, ChatToolbarTextarea } from '@/components/chat/chat-toolbar';
+import { ChatToolbar, ChatToolbarButton, ChatToolbarTextarea } from '@/components/chat/chat-toolbar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserAvatar } from '@/components/user-avatar';
@@ -79,7 +86,9 @@ function InboxPage() {
     activeConversationId ? { conversationId: activeConversationId, limit: 100 } : 'skip'
   );
   const sendMessage = useMutation(api.messages.sendMessage);
+  const hideConversation = useMutation(api.conversations.hideConversation);
   const [messageText, setMessageText] = React.useState('');
+  const [isHidingConversation, setIsHidingConversation] = React.useState(false);
 
   const isLoading = conversationsData === undefined;
   const conversations: ChatListConversation[] = React.useMemo(() => {
@@ -141,6 +150,23 @@ function InboxPage() {
     });
   };
 
+  const handleHideConversation = async () => {
+    if (!activeConversationId || conversationDetail?.conversation.type !== 'DM' || isHidingConversation) return;
+
+    setIsHidingConversation(true);
+    try {
+      await hideConversation({ conversationId: activeConversationId });
+      toast.success('Chat hidden.');
+      setMessageText('');
+      void navigate({ to: '/inbox', search: { conversationId: undefined } });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to hide chat.';
+      toast.error(message);
+    } finally {
+      setIsHidingConversation(false);
+    }
+  };
+
   const headerInfo = React.useMemo(() => {
     if (!conversationDetail) {
       return {
@@ -181,9 +207,10 @@ function InboxPage() {
   const headerName = headerInfo.name;
   const headerInitials = headerName.charAt(0).toUpperCase();
   const hasActiveChat = !!activeConversationId;
+  const isActiveDm = conversationDetail?.conversation.type === 'DM';
 
   return (
-    <div className="-m-4 mt-0 flex h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="border-border/70 bg-card/70 flex min-h-0 flex-1 overflow-hidden rounded-3xl border shadow-sm">
       <div className={cn('flex-col border-r', 'md:flex md:w-80 lg:w-96', hasActiveChat ? 'hidden' : 'flex w-full')}>
         <div className="border-b px-4 py-3">
           <h1 className="text-lg font-semibold">Inbox</h1>
@@ -219,6 +246,27 @@ function InboxPage() {
               <ChatHeaderMain>
                 <span className="truncate font-medium">{headerName || <Skeleton className="h-4 w-24" />}</span>
               </ChatHeaderMain>
+              {isActiveDm ? (
+                <ChatHeaderAddon>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <ChatHeaderButton
+                        aria-label="Conversation options"
+                        disabled={isHidingConversation}
+                        className="text-muted-foreground"
+                      >
+                        <MoreHorizontal />
+                      </ChatHeaderButton>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" sideOffset={8}>
+                      <DropdownMenuItem onClick={() => void handleHideConversation()} disabled={isHidingConversation}>
+                        <EyeOff className="mr-2 size-4" />
+                        Hide chat
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </ChatHeaderAddon>
+              ) : null}
             </ChatHeader>
 
             <ChatMessages>
@@ -286,31 +334,31 @@ function InboxPage() {
               )}
             </ChatMessages>
 
-            <ChatToolbar className="border-t-0">
-              <div className="flex w-full items-end gap-2">
+            <ChatToolbar className="border-t-0 px-3 pt-1 pb-3">
+              <div className="focus-within:border-primary/25 relative flex w-full items-stretch overflow-hidden rounded-[1.5rem] border border-white/[0.07] bg-white/[0.035] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_16px_rgba(0,0,0,0.22)] backdrop-blur-2xl transition-all duration-300 focus-within:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_16px_rgba(0,0,0,0.22),0_0_28px_rgba(210,255,0,0.06)]">
                 <ChatToolbarTextarea
-                  className="bg-secondary/30 hover:bg-secondary/50 focus:bg-secondary/80 focus-visible:ring-primary min-h-11 w-full resize-none rounded-2xl px-4 py-3 text-sm shadow-sm backdrop-blur-sm transition-colors focus-visible:ring-1 focus-visible:ring-offset-0"
+                  className="placeholder:text-muted-foreground/35 min-h-12 resize-none border-none bg-transparent py-3.5 pr-14 pl-5 text-sm leading-relaxed shadow-none focus-visible:border-none focus-visible:ring-0 focus-visible:ring-offset-0"
                   rows={1}
                   value={messageText}
                   onChange={e => setMessageText(e.target.value)}
                   onSubmit={handleSend}
-                  placeholder="Type your message..."
+                  placeholder="Message..."
                 />
-                <ChatToolbarAddon align="inline-end">
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-1.5">
                   <ChatToolbarButton
                     onClick={handleSend}
                     disabled={!messageText.trim()}
                     aria-label="Send message"
                     className={cn(
-                      'mb-0.5 size-10 shrink-0 rounded-xl transition-colors',
+                      'pointer-events-auto size-9 shrink-0 rounded-full border-0 transition-all duration-200',
                       messageText.trim()
-                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                        : 'bg-muted/50 text-muted-foreground'
+                        ? 'bg-primary hover:bg-primary text-black shadow-[0_0_0_1px_rgba(210,255,0,0.2),0_2px_16px_rgba(210,255,0,0.22)] hover:scale-[1.07] hover:shadow-[0_0_0_1px_rgba(210,255,0,0.32),0_4px_24px_rgba(210,255,0,0.38)] active:scale-[0.93]'
+                        : 'text-muted-foreground/25 bg-transparent hover:bg-white/5'
                     )}
                   >
-                    <Send className="size-5" />
+                    <ArrowUp className="size-[18px]" strokeWidth={2.5} />
                   </ChatToolbarButton>
-                </ChatToolbarAddon>
+                </div>
               </div>
             </ChatToolbar>
           </ChatRoot>

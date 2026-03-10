@@ -7,7 +7,6 @@ import { format } from 'date-fns';
 import { CalendarClock, MapPin, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { ResponsiveFormContainer } from '@/components/ui/responsive-form-container';
@@ -119,75 +118,144 @@ export function GameDetailsSheet({ activityId, trigger }: GameDetailsSheetProps)
     }
   };
 
+  const spotsLeft = activityItem
+    ? Math.max(0, activityItem.activity.requirements.slotsTotal - activityItem.activity.joinedCount)
+    : 0;
+
   const sheetContent = activityItem ? (
-    <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4 md:px-0 md:pb-0">
-      <div className="bg-muted/20 rounded-2xl border p-4 sm:p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0 space-y-1">
-            <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">{activityItem.activity.title}</h2>
-            <p className="text-muted-foreground text-sm">Hosted by @{activityItem.creator.username}</p>
+    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4 md:px-0 md:pb-0">
+      {/* Main game card */}
+      <div className="bg-card overflow-hidden rounded-2xl border">
+        {/* Accent top bar */}
+        <div className="bg-primary h-1 w-full" />
+        <div className="p-4 sm:p-5">
+          {/* Title + spots left */}
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <h2 className="text-lg leading-tight font-bold tracking-tight sm:text-xl">
+                {activityItem.activity.title}
+              </h2>
+              <p className="text-muted-foreground mt-0.5 text-xs">
+                Hosted by <span className="text-foreground font-medium">@{activityItem.creator.username}</span>
+              </p>
+            </div>
+            <div
+              className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                spotsLeft === 0 ? 'bg-destructive/10 text-destructive' : 'bg-primary/15 text-primary'
+              }`}
+            >
+              {spotsLeft === 0 ? 'Full' : `${spotsLeft} spots left`}
+            </div>
           </div>
-          <Badge variant="secondary" className="shrink-0">
-            {Math.max(0, activityItem.activity.requirements.slotsTotal - activityItem.activity.joinedCount)} spots left
-          </Badge>
-        </div>
 
-        <div className="text-muted-foreground mt-4 grid gap-3 text-sm sm:grid-cols-2">
-          <div className="flex items-start gap-2">
-            <CalendarClock className="mt-0.5 size-4 shrink-0" />
-            <span>{formatGameTime(activityItem.activity.startTime)}</span>
+          {/* Divider */}
+          <div className="border-border/50 my-3.5 border-t" />
+
+          {/* Date & Location */}
+          <div className="space-y-2.5">
+            <div className="flex items-start gap-3 text-sm">
+              <div className="bg-muted mt-0.5 shrink-0 rounded-lg p-1.5">
+                <CalendarClock className="text-muted-foreground size-3.5" />
+              </div>
+              <span className="text-foreground leading-snug">{formatGameTime(activityItem.activity.startTime)}</span>
+            </div>
+            <div className="flex items-start gap-3 text-sm">
+              <div className="bg-muted mt-0.5 shrink-0 rounded-lg p-1.5">
+                <MapPin className="text-muted-foreground size-3.5" />
+              </div>
+              <span className="text-foreground leading-snug">
+                {club?.name ?? activityItem.activity.location.name ?? 'Club not set'}
+                {activityItem.activity.location.address ? `, ${activityItem.activity.location.address}` : ''}
+              </span>
+            </div>
           </div>
-          <div className="flex items-start gap-2">
-            <MapPin className="mt-0.5 size-4 shrink-0" />
-            <span>
-              {club?.name ?? activityItem.activity.location.name ?? 'Club not set'}
-              {activityItem.activity.location.address ? `, ${activityItem.activity.location.address}` : ''}
+
+          {/* Divider */}
+          <div className="border-border/50 my-3.5 border-t" />
+
+          {/* Tags row */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="bg-muted text-muted-foreground rounded-full px-2.5 py-1 text-xs font-medium">
+              Levels {activityItem.activity.requirements.levelMin.toFixed(1)}–
+              {activityItem.activity.requirements.levelMax.toFixed(1)}
             </span>
-          </div>
-        </div>
+            <span className="bg-muted text-muted-foreground rounded-full px-2.5 py-1 text-xs font-medium">
+              <Users className="mr-1 inline size-3" />
+              {activityItem.activity.joinedCount}/{activityItem.activity.requirements.slotsTotal} players
+            </span>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Badge variant="outline">
-            Levels {activityItem.activity.requirements.levelMin.toFixed(1)} -{' '}
-            {activityItem.activity.requirements.levelMax.toFixed(1)}
-          </Badge>
-          <Badge variant="outline">
-            {activityItem.activity.joinedCount}/{activityItem.activity.requirements.slotsTotal} players
-          </Badge>
-          {currentParticipant?.status === 'JOINED' && (
-            <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">Joined</Badge>
-          )}
-          {request?.status === 'PENDING' && <Badge>Request pending</Badge>}
-          {request?.status === 'REJECTED' && <Badge variant="destructive">Request declined</Badge>}
+            {currentParticipant?.status === 'JOINED' && (
+              <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-semibold text-emerald-500">
+                Joined
+              </span>
+            )}
+            {request?.status === 'PENDING' && (
+              <span className="bg-primary/15 text-primary rounded-full px-2.5 py-1 text-xs font-semibold">
+                Request pending
+              </span>
+            )}
+            {request?.status === 'REJECTED' && (
+              <span className="bg-destructive/15 text-destructive rounded-full px-2.5 py-1 text-xs font-semibold">
+                Request declined
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Users className="size-4" />
-          <h3 className="font-medium">Who&apos;s in</h3>
+      {/* Who's in section */}
+      <div className="bg-card rounded-2xl border p-4 sm:p-5">
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Users className="text-muted-foreground size-4" />
+            <h3 className="text-sm font-semibold">Who&apos;s in</h3>
+          </div>
+          <span className="text-muted-foreground bg-muted rounded-full px-2 py-0.5 text-xs">
+            {joinedParticipants.length} / {activityItem.activity.requirements.slotsTotal}
+          </span>
         </div>
+
         {participants === undefined ? (
-          <p className="text-muted-foreground text-sm">Loading players…</p>
-        ) : joinedParticipants.length === 0 ? (
-          <p className="text-muted-foreground rounded-xl border p-3 text-sm">No players joined yet.</p>
-        ) : (
-          <div className="grid gap-2 sm:grid-cols-2">
-            {joinedParticipants.map(participant => (
-              <div
-                key={participant._id}
-                className="bg-muted/35 flex items-center justify-between gap-3 rounded-xl border p-3 text-sm"
-              >
-                <span>@{participant.username}</span>
-                <Badge variant="outline">{participant.joinedVia ?? 'JOINED'}</Badge>
-              </div>
+          <div className="space-y-2">
+            {[1, 2].map(i => (
+              <div key={i} className="bg-muted/40 h-12 animate-pulse rounded-xl" />
             ))}
+          </div>
+        ) : joinedParticipants.length === 0 ? (
+          <p className="text-muted-foreground rounded-xl border border-dashed py-4 text-center text-sm">
+            No players joined yet
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {joinedParticipants.map(participant => {
+              const isCreator = participant.userId === activityItem.activity.creatorId;
+              const initials = participant.username.slice(0, 2).toUpperCase();
+              return (
+                <div
+                  key={participant._id}
+                  className="bg-muted/30 flex items-center gap-3 rounded-xl border px-3 py-2.5"
+                >
+                  <div className="bg-primary/20 text-primary flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold">
+                    {initials}
+                  </div>
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium">@{participant.username}</span>
+                  {isCreator && (
+                    <span className="bg-primary/15 text-primary shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold">
+                      Creator
+                    </span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
     </div>
   ) : (
-    <div className="text-muted-foreground px-4 pb-4 text-sm">Loading game details…</div>
+    <div className="flex flex-1 flex-col gap-4 px-4 pb-4 md:px-0 md:pb-0">
+      <div className="bg-muted/40 h-48 animate-pulse rounded-2xl" />
+      <div className="bg-muted/40 h-32 animate-pulse rounded-2xl" />
+    </div>
   );
 
   return (
@@ -211,10 +279,15 @@ export function GameDetailsSheet({ activityId, trigger }: GameDetailsSheetProps)
 
       {sheetContent}
 
-      <DrawerFooter className="border-t md:hidden">
-        <Button disabled={action.disabled || actionBusy !== null} onClick={handleAction}>
+      <DrawerFooter className="bg-background/80 border-t backdrop-blur-sm md:hidden">
+        <Button
+          disabled={action.disabled || actionBusy !== null}
+          onClick={handleAction}
+          size="lg"
+          className="w-full rounded-xl"
+        >
           {actionBusy === 'join'
-            ? 'Sending…'
+            ? 'Sending request…'
             : actionBusy === 'cancel'
               ? 'Cancelling…'
               : actionBusy === 'leave'
@@ -222,10 +295,15 @@ export function GameDetailsSheet({ activityId, trigger }: GameDetailsSheetProps)
                 : action.label}
         </Button>
       </DrawerFooter>
-      <SheetFooter className="hidden border-t px-6 pb-6 md:flex">
-        <Button disabled={action.disabled || actionBusy !== null} onClick={handleAction} className="w-full">
+      <SheetFooter className="bg-background/80 hidden border-t px-6 py-4 backdrop-blur-sm md:flex">
+        <Button
+          disabled={action.disabled || actionBusy !== null}
+          onClick={handleAction}
+          size="lg"
+          className="w-full rounded-xl"
+        >
           {actionBusy === 'join'
-            ? 'Sending…'
+            ? 'Sending request…'
             : actionBusy === 'cancel'
               ? 'Cancelling…'
               : actionBusy === 'leave'

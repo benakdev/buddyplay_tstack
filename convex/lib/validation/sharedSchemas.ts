@@ -16,6 +16,7 @@ export const genderSchema = z.enum(['Male', 'Female']);
 export const joinedViaSchema = z.enum(['REQUEST', 'INVITE', 'BROADCAST', 'CREATOR']);
 export const notificationTypeSchema = z.enum([
   'MESSAGE',
+  'ACTIVITY_CHAT',
   'REQUEST',
   'APPROVED',
   'REJECTED',
